@@ -1,0 +1,64 @@
+<Window x:Class="Seal.StatisticsWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Style="{StaticResource DarkWindowStyle}" Title="Seal — Statistics" Width="790" Height="580" ResizeMode="NoResize" WindowStyle="None" AllowsTransparency="True" Background="Transparent" Topmost="True" WindowStartupLocation="CenterOwner">
+    <Window.Resources>
+        <Style x:Key="StatisticsIconStyle" TargetType="Path" BasedOn="{StaticResource MaterialIconStyle}">
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Border Background="{StaticResource BackgroundBrush}" BorderBrush="#454545" BorderThickness="1" CornerRadius="8" MouseLeftButtonDown="DragWindow">
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <DockPanel Grid.Row="0" Background="Transparent" Margin="0,0,0,40">
+                <Button DockPanel.Dock="Right" Click="CloseWindow" ToolTip="Close" Width="32" Height="28" Padding="0" VerticalAlignment="Center" AutomationProperties.Name="Close">
+                    <Path Style="{StaticResource StatisticsIconStyle}" Data="{StaticResource MaterialClose}"/>
+                </Button>
+                <TextBlock Text="Statistics" FontSize="24" FontWeight="SemiBold" ToolTip="Drag to move"/>
+            </DockPanel>
+            <StackPanel Grid.Row="1" Width="748" HorizontalAlignment="Center" VerticalAlignment="Top">
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <Button Click="PreviousYear" ToolTip="Previous" AutomationProperties.Name="Previous">
+                    <Path Style="{StaticResource StatisticsIconStyle}" Data="{StaticResource MaterialPrevious}"/>
+                </Button>
+                    <TextBlock x:Name="YearLabel" Width="65" TextAlignment="Center" VerticalAlignment="Center" FontSize="16"/>
+                    <Button Click="NextYear" ToolTip="Next" AutomationProperties.Name="Next">
+                    <Path Style="{StaticResource StatisticsIconStyle}" Data="{StaticResource MaterialNext}"/>
+                </Button>
+                    <TextBlock Text="Annual activity · select a day" Foreground="#AAAAAA" VerticalAlignment="Center" Margin="20,0"/>
+            </StackPanel>
+            <Canvas x:Name="AnnualChart" Width="739" Height="150" HorizontalAlignment="Center"/>
+           
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                <Button Click="PreviousDay" ToolTip="Previous" AutomationProperties.Name="Previous">
+                    <Path Style="{StaticResource StatisticsIconStyle}" Data="{StaticResource MaterialPrevious}"/>
+                </Button>
+                <TextBlock x:Name="DayLabel" Width="160" TextAlignment="Center" VerticalAlignment="Center"/>
+                <Button Click="NextDay" ToolTip="Next" AutomationProperties.Name="Next">
+                    <Path Style="{StaticResource StatisticsIconStyle}" Data="{StaticResource MaterialNext}"/>
+                </Button>
+                <Button Click="SelectToday" ToolTip="Today" AutomationProperties.Name="Today">
+                    <Path Style="{StaticResource StatisticsIconStyle}" Data="{StaticResource MaterialToday}"/>
+                </Button>
+                <Button Click="Reload" ToolTip="Refresh" AutomationProperties.Name="Refresh">
+                    <Path Style="{StaticResource StatisticsIconStyle}" Data="{StaticResource MaterialRefresh}"/>
+                </Button>
+            </StackPanel>
+            <UniformGrid Columns="3" Margin="0,0,0,16">
+                <StackPanel><TextBlock Text="ROUNDS" Foreground="#AAAAAA"/><TextBlock x:Name="RoundsLabel" FontSize="32" FontWeight="SemiBold"/></StackPanel>
+                <StackPanel><TextBlock Text="FOCUS TIME" Foreground="#AAAAAA"/><TextBlock x:Name="FocusLabel" FontSize="32" FontWeight="SemiBold"/></StackPanel>
+                <StackPanel><TextBlock Text="COMPLETION" Foreground="#AAAAAA"/><TextBlock x:Name="CompletionLabel" FontSize="32" FontWeight="SemiBold"/></StackPanel>
+            </UniformGrid>
+            <TextBlock Text="COMPLETED SESSIONS BY START HOUR" Foreground="#AAAAAA" Margin="0,0,0,12"/>
+            <Canvas x:Name="HourlyChart" Width="748" Height="120" HorizontalAlignment="Center"/>
+            <TextBlock x:Name="EmptyLabel" Foreground="#AAAAAA" Margin="0,8,0,0"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

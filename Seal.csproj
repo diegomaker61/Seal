@@ -6,11 +6,14 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>Assets\Icons\seal.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Assets\Icons\seal.png"/>
     <Resource Include="Assets\Icons\seal.png"/>
+    <None Remove="Assets\Icons\seal.ico"/>
+    <Resource Include="Assets\Icons\seal.ico"/>
   </ItemGroup>
 
 </Project>

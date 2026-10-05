@@ -9,6 +9,7 @@ public sealed class FocusTimer(ISessionRepository repository, TimeSpan duration)
     private Guid sessionId;
     private DateTimeOffset startedAt;
     private bool completed;
+    private FocusTask sessionTask = new(Guid.Empty, "default");
 
     public TimeSpan Duration { get; } = duration;
     public bool IsRunning => stopwatch.IsRunning;
@@ -16,7 +17,7 @@ public sealed class FocusTimer(ISessionRepository repository, TimeSpan duration)
     public TimeSpan Remaining => Duration - Elapsed;
     public bool HasStarted => sessionId != Guid.Empty;
 
-    public void Start()
+    public void Start(FocusTask? task = null)
     {
         if (completed)
         {
@@ -27,6 +28,7 @@ public sealed class FocusTimer(ISessionRepository repository, TimeSpan duration)
         {
             sessionId = Guid.NewGuid();
             startedAt = DateTimeOffset.Now;
+            sessionTask = task ?? new FocusTask(Guid.Empty, "default");
         }
 
         stopwatch.Start();
@@ -63,7 +65,9 @@ public sealed class FocusTimer(ISessionRepository repository, TimeSpan duration)
             startedAt,
             DateTimeOffset.Now,
             Elapsed.TotalSeconds,
-            completed));
+            completed,
+            sessionTask.Id,
+            sessionTask.Name));
     }
 
     public void Reset()

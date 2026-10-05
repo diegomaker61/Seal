@@ -5,4 +5,6 @@ public sealed record FocusSession(
     DateTimeOffset StartedAt,
     DateTimeOffset EndedAt,
     double FocusSeconds,
-    bool Completed);
+    bool Completed,
+    Guid TaskId = default,
+    string TaskName = "default");

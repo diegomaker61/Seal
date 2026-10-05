@@ -1,0 +1,28 @@
+<Window x:Class="Seal.TasksWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Style="{StaticResource DarkWindowStyle}" Title="Seal — Tasks" Width="400" Height="390" ResizeMode="NoResize" WindowStyle="None" AllowsTransparency="True" Background="Transparent" Topmost="True" WindowStartupLocation="CenterOwner">
+    <Border Background="{StaticResource BackgroundBrush}" BorderBrush="#454545" BorderThickness="1" CornerRadius="8" Padding="20" MouseLeftButtonDown="DragWindow">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <DockPanel Margin="0,0,0,16">
+                <Button DockPanel.Dock="Right" Click="CloseWindow" ToolTip="Close" AutomationProperties.Name="Close" Width="32" Padding="0">
+                    <Path Style="{StaticResource MaterialIconStyle}" Data="{StaticResource MaterialClose}" Width="12" Height="12"/>
+                </Button>
+                <TextBlock Text="Tasks" FontSize="24" FontWeight="SemiBold"/>
+            </DockPanel>
+            <ListBox x:Name="TaskList" Grid.Row="1" ItemTemplate="{StaticResource TaskNameTemplate}" SelectionChanged="SelectTask" Background="{StaticResource SurfaceBrush}" Foreground="#F5F5F5" BorderThickness="0" Padding="4"/>
+            <TextBox x:Name="TaskNameInput" Grid.Row="2" Margin="0,12,0,12" MaxLength="15" ToolTip="Task name (up to 15 characters)" AutomationProperties.Name="Task name"/>
+            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Add" Click="AddTask" Background="{StaticResource AccentBrush}"/>
+                <Button x:Name="RenameButton" Content="Rename" Click="RenameTask"/>
+                <Button x:Name="RemoveButton" Content="Remove" Click="RemoveTask"/>
+            </StackPanel>
+            <TextBlock x:Name="FeedbackLabel" Grid.Row="4" Foreground="#AAAAAA" TextWrapping="Wrap" Margin="0,12,0,0" Text="Keep at least one task. Add another to remove default."/>
+        </Grid>
+    </Border>
+</Window>

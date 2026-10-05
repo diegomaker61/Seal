@@ -18,7 +18,7 @@ internal static class WindowDrag
 
         while (source is not null && source != window)
         {
-            if (source is ButtonBase)
+            if (source is ButtonBase or Selector or TextBoxBase)
             {
                 return;
             }

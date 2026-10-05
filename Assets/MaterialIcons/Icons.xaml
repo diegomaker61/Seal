@@ -8,6 +8,7 @@
     <PathGeometry x:Key="MaterialStatistics" Figures="M4 9H8V20H4Z M16 13H20V20H16Z M10 4H14V20H10Z"/>
     <PathGeometry x:Key="MaterialToday" Figures="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
     <PathGeometry x:Key="MaterialRefresh" Figures="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+    <PathGeometry x:Key="MaterialTasks" Figures="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
     <Style x:Key="MaterialIconStyle" TargetType="Path">
         <Setter Property="Width" Value="18"/>
         <Setter Property="Height" Value="18"/>

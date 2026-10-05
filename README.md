@@ -34,3 +34,13 @@ Na primeira execução do Seal, o histórico anterior de %LOCALAPPDATA%\Tomato\s
 ## Dados temporários de visualização
 
 O histórico local recebeu 482 sessões fictícias para visualizar os gráficos. A interface utiliza esse mesmo histórico, sem modo de amostra ou alternância. Os oito registros existentes foram preservados. Uma cópia anterior à inclusão fica ao lado de sessions.json, com sufixo .before-fictional e data/hora. Para remover os dados fictícios posteriormente, restaure essa cópia se não precisar dos registros criados depois dela.
+
+## Tarefas
+
+O botão **Tasks**, ao lado de **Statistics**, abre o gerenciamento de tarefas. Digite um nome e use **Add** para criar, ou selecione uma tarefa para **Rename** ou **Remove**. Os nomes devem ter entre 1 e 15 caracteres; nomes ativos duplicados não são permitidos. A tarefa `default` é criada automaticamente e pode ser removida quando existir pelo menos outra tarefa ativa. Sua renomeação permanece bloqueada. O sistema mantém pelo menos uma tarefa ativa; o botão de remoção fica desabilitado para a última tarefa. Uma tarefa removida não é recriada ao reabrir o aplicativo, e seu histórico continua disponível nas estatísticas.
+
+O seletor acima do cronômetro escolhe a tarefa da próxima sessão. A seleção fica bloqueada enquanto a sessão estiver em andamento ou pausada. Conclua ou reinicie a sessão para escolher outra tarefa. Cada sessão guarda o identificador estável da tarefa e uma cópia do seu nome no início. Renomear uma tarefa mantém suas sessões associadas; remover uma tarefa retira-a das opções de novas sessões, preservando sua identificação no histórico.
+
+Na janela **Statistics**, o seletor no cabeçalho filtra o calendário anual, os indicadores diários e o gráfico por tarefa. **All tasks** mostra os totais gerais. Tarefas removidas não aparecem no filtro nem nos totais, calendário ou gráficos das estatísticas. Seus registros permanecem salvos no histórico. Sessões antigas, incluindo os dados fictícios já existentes, pertencem à tarefa `default`.
+
+As tarefas ficam em `%LOCALAPPDATA%\Seal\tasks.json`. `ITaskRepository` abstrai a persistência, `JsonTaskRepository` salva o arquivo por substituição e `TaskCatalog` valida nomes e controla criação, renomeação e remoção. As janelas compartilham o catálogo e atualizam os seletores após mudanças.

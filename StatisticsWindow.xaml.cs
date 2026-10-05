@@ -4,24 +4,54 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using Seal.Services;
+using Seal.Models;
 
 namespace Seal;
 
 public partial class StatisticsWindow : Window
 {
     private readonly StatisticsService statistics;
+    private readonly TaskCatalog tasks;
     private DateTime selectedDay = DateTime.Today;
     private int selectedYear = DateTime.Today.Year;
 
-    public StatisticsWindow(StatisticsService statistics)
+    public StatisticsWindow(StatisticsService statistics, TaskCatalog tasks)
     {
         InitializeComponent();
         this.statistics = statistics;
+        this.tasks = tasks;
+        RefreshTaskFilters();
+        TaskFilterPicker.SelectionChanged += (_, _) => RefreshData();
+        tasks.Changed += TasksChanged;
+        Closed += (_, _) => tasks.Changed -= TasksChanged;
         Loaded += (_, _) => RefreshData();
     }
 
-    private IReadOnlyList<Seal.Models.FocusSession> ReadSessions() =>
-        statistics.ReadAll();
+    private IReadOnlyList<FocusSession> ReadSessions()
+    {
+        var activeTaskIds = tasks.ActiveTasks().Select(task => task.Id).ToHashSet();
+        var selectedId = (TaskFilterPicker.SelectedItem as TaskFilter)?.Id;
+
+        return statistics.ReadAll()
+            .Where(session => activeTaskIds.Contains(session.TaskId))
+            .Where(session => selectedId is null || session.TaskId == selectedId)
+            .ToList();
+    }
+
+    private void TasksChanged(object? sender, EventArgs e)
+    {
+        RefreshTaskFilters();
+        RefreshData();
+    }
+
+    private void RefreshTaskFilters()
+    {
+        var selectedId = (TaskFilterPicker.SelectedItem as TaskFilter)?.Id;
+        var filters = new List<TaskFilter> { new(null, "All tasks") };
+        filters.AddRange(tasks.ActiveTasks().Select(task => new TaskFilter(task.Id, task.Name)));
+        TaskFilterPicker.ItemsSource = filters;
+        TaskFilterPicker.SelectedItem = filters.FirstOrDefault(filter => filter.Id == selectedId) ?? filters[0];
+    }
 
     public void RefreshData()
     {

@@ -21,7 +21,8 @@ public partial class App : Application
 
         var repository = new JsonSessionRepository();
         var timer = new FocusTimer(repository, TimeSpan.FromMinutes(30));
-        MainWindow = new MainWindow(timer, new StatisticsService(repository));
+        var tasks = new TaskCatalog(new JsonTaskRepository());
+        MainWindow = new MainWindow(timer, new StatisticsService(repository), tasks);
         MainWindow.Show();
     }
 

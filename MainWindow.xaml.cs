@@ -2,22 +2,28 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Seal.Services;
+using Seal.Models;
 
 namespace Seal;
 
 public partial class MainWindow : Window
 {
     private readonly FocusTimer focusTimer;
+    private readonly TaskCatalog tasks;
+    private TasksWindow? tasksWindow;
     private readonly StatisticsService statistics;
     private readonly DispatcherTimer refreshTimer = new() { Interval = TimeSpan.FromMilliseconds(200) };
     private StatisticsWindow? statisticsWindow;
     private DateTime nextCheckpoint = DateTime.UtcNow.AddSeconds(30);
 
-    public MainWindow(FocusTimer focusTimer, StatisticsService statistics)
+    public MainWindow(FocusTimer focusTimer, StatisticsService statistics, TaskCatalog tasks)
     {
         InitializeComponent();
         this.focusTimer = focusTimer;
         this.statistics = statistics;
+        this.tasks = tasks;
+        tasks.Changed += TasksChanged;
+        RefreshTaskPicker();
         refreshTimer.Tick += Refresh;
         refreshTimer.Start();
         Closing += (_, _) =>
@@ -25,6 +31,8 @@ public partial class MainWindow : Window
             ExecuteSafely(focusTimer.Pause);
             refreshTimer.Stop();
             statisticsWindow?.Close();
+            tasksWindow?.Close();
+            tasks.Changed -= TasksChanged;
         };
     }
 
@@ -35,6 +43,7 @@ public partial class MainWindow : Window
             if (focusTimer.Update())
             {
                 System.Media.SystemSounds.Asterisk.Play();
+                RefreshTaskPicker();
             }
 
             if (focusTimer.IsRunning && DateTime.UtcNow >= nextCheckpoint)
@@ -49,6 +58,7 @@ public partial class MainWindow : Window
             return;
         }
 
+        TaskPicker.IsEnabled = !focusTimer.HasStarted || focusTimer.Remaining == TimeSpan.Zero;
         var seconds = (int)Math.Ceiling(focusTimer.Remaining.TotalSeconds);
         TimeDisplay.Text = $"{seconds / 60:00}:{seconds % 60:00}";
         FocusProgress.Value = focusTimer.Elapsed.TotalSeconds / focusTimer.Duration.TotalSeconds * 100;
@@ -69,7 +79,7 @@ public partial class MainWindow : Window
             }
             else
             {
-                focusTimer.Start();
+                focusTimer.Start(TaskPicker.SelectedItem as FocusTask);
             }
 
             Refresh(null, EventArgs.Empty);
@@ -81,6 +91,7 @@ public partial class MainWindow : Window
         ExecuteSafely(() =>
         {
             focusTimer.Reset();
+            RefreshTaskPicker();
             Refresh(null, EventArgs.Empty);
         });
     }
@@ -106,7 +117,7 @@ public partial class MainWindow : Window
 
         if (statisticsWindow is null)
         {
-            statisticsWindow = new StatisticsWindow(statistics) { Owner = this };
+            statisticsWindow = new StatisticsWindow(statistics, tasks) { Owner = this };
             statisticsWindow.Closed += (_, _) => statisticsWindow = null;
             statisticsWindow.Show();
         }
@@ -114,6 +125,37 @@ public partial class MainWindow : Window
         statisticsWindow.RefreshData();
         statisticsWindow.Activate();
     }
+
+    private void TasksChanged(object? sender, EventArgs e) => RefreshTaskPicker();
+
+    private void RefreshTaskPicker()
+    {
+        var selected = TaskPicker.SelectedItem as FocusTask;
+        var available = tasks.ActiveTasks().ToList();
+
+        if (selected is not null && focusTimer.HasStarted && focusTimer.Remaining > TimeSpan.Zero &&
+            !available.Any(task => task.Id == selected.Id))
+        {
+            available.Add(selected);
+        }
+
+        TaskPicker.ItemsSource = available;
+        TaskPicker.SelectedItem = available.FirstOrDefault(task => task.Id == selected?.Id)
+            ?? available.FirstOrDefault(task => task.Id == Guid.Empty)
+            ?? available.First();
+    }
+
+    private void OpenTasks(object sender, RoutedEventArgs e) => ExecuteSafely(() =>
+    {
+        if (tasksWindow is null)
+        {
+            tasksWindow = new TasksWindow(tasks) { Owner = this };
+            tasksWindow.Closed += (_, _) => tasksWindow = null;
+            tasksWindow.Show();
+        }
+
+        tasksWindow.Activate();
+    });
 
     private void DragWindow(object sender, MouseButtonEventArgs e)
     {

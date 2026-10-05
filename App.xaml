@@ -3,12 +3,13 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Assets/MaterialIcons/Icons.xaml"/>
+                <ResourceDictionary Source="Assets/Theme/InputControls.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         <SolidColorBrush x:Key="BackgroundBrush" Color="#202020"/>
         <SolidColorBrush x:Key="SurfaceBrush" Color="#2D2D2D"/>
         <SolidColorBrush x:Key="AccentBrush" Color="#FF2F7580"/>
         <Style x:Key="DarkWindowStyle" TargetType="Window">
-            <Setter Property="Icon" Value="pack://application:,,,/Assets/Icons/seal.ico"/>
+            <Setter Property="Icon" Value="pack://application:,,,/Seal;component/Assets/Icons/seal.ico"/>
             <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
             <Setter Property="Foreground" Value="#F5F5F5"/>
             <Setter Property="FontFamily" Value="Segoe UI Variable, Segoe UI"/>

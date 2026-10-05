@@ -1,46 +1,78 @@
 # Seal
 
-Aplicativo de foco para Windows, desenvolvido em C# e WPF (.NET 10).
+**English** | [Português (Brasil)](README.pt-BR.md)
 
-## Executar
+Seal is an open-source focus app for Windows, built with C# and WPF on .NET 10. It combines a 30-minute Pomodoro timer, tasks, and statistics in a minimalist interface inspired by the Windows 11 dark theme.
 
-Instale o SDK .NET 10 no Windows e execute `dotnet run --project Seal.csproj` na pasta do projeto. Para compilar, use `dotnet build Seal.csproj`.
+## Features
 
-## Utilização
+- Focus timer with pause, resume, reset, and a progress bar.
+- Always-on-top windows with rounded corners and drag support.
+- Task management and sessions linked to the selected task.
+- Annual activity calendar, daily metrics, and hourly session chart.
+- Local history and single-instance protection.
 
-A janela principal inicia com 30 minutos. **Start** começa a sessão, **Pause** interrompe a contagem e **Resume** continua do mesmo ponto. O botão de reiniciar registra o tempo realizado e prepara outra sessão. Ao concluir, um som do sistema sinaliza o término; a próxima sessão começa apenas ao clicar em **Start**. Arraste uma área vazia da janela principal ou o texto do cronômetro para reposicioná-la. A janela de estatísticas tem tamanho fixo de 790 × 580 unidades WPF, sem redimensionamento ou moldura nativa. As bordas são arredondadas, com raio de 8 unidades WPF. Arraste seu fundo ou cabeçalho escuro para movê-la e use × para fechá-la. Clicar no calendário seleciona o dia sem iniciar o arraste. Os botões mantêm seu comportamento de clique.
+## Installation
 
-**Stats** abre a segunda janela. As duas permanecem acima das janelas comuns do Windows. O calendário anual usa domingo como primeira linha e intensidade proporcional aos minutos de foco. Clique em um dia para consultar suas estatísticas, ou navegue usando as setas. **Today** retorna ao dia atual e **Refresh** recarrega o histórico.
+Download the Windows package from **Releases**, extract the ZIP, and run `Seal.exe`. Keep the package files in the same folder. Self-contained packages include .NET; framework-dependent builds require the **.NET Desktop Runtime 10**.
 
-As rodadas representam sessões concluídas. O tempo de foco inclui sessões parciais. A conclusão é o percentual de sessões concluídas sobre as iniciadas no dia. As barras contam sessões concluídas por hora de início. Uma sessão é atribuída à data e hora locais de início, inclusive quando atravessa a meia-noite. Pausas não entram no tempo de foco.
+## Usage
 
-## Dados e arquitetura
+1. Choose a task from the dropdown above the timer.
+2. Click **Play** to start. Use **Pause** to pause and **Play** to resume.
+3. Use **Reset** to save the focus time and prepare another session. A sound signals the end of the 30-minute session.
+4. Open **Tasks** to add, rename, or remove tasks. Names can contain up to 15 characters. At least one task must remain; `default` can be removed when another task exists.
+5. Open **Statistics** to view your history. Select a task or **All tasks**, navigate between years and days, or click a calendar day. **Today** returns to the current day, and **Refresh** reloads the data.
 
-O histórico fica em `%LOCALAPPDATA%\Seal\sessions.json`, salvo por substituição de arquivo temporário. A sessão é atualizada a cada 30 segundos, ao pausar, reiniciar, abrir estatísticas e fechar. Sessões interrompidas ficam no histórico como parciais; o cronômetro não retoma automaticamente após reabrir o aplicativo. Um encerramento abrupto pode perder os últimos 30 segundos. O aplicativo permite uma única instância por sessão do Windows. Tentativas de abrir outra instância são encerradas antes de criar janelas ou acessar o histórico. Um mutex nomeado mantém essa proteção enquanto o processo está em execução e é liberado ao sair.
+Hover over icons to see their functions. Drag an empty area or the header to move a window. A session's task can only be changed after completing or resetting the session.
 
-`FocusTimer` controla a contagem monotônica usando `Stopwatch`. `ISessionRepository` abstrai a persistência e `JsonSessionRepository` implementa o armazenamento JSON. `StatisticsService` consulta os dados; as janelas cuidam da apresentação e das interações. As dependências são montadas em `App`, mantendo responsabilidades separadas e permitindo substituir o repositório.
+In statistics, **Rounds** counts completed sessions, **Focus time** includes partial sessions, and **Completion** shows the percentage of completed sessions. Removed tasks are excluded from filters and totals.
 
-A interface usa a paleta escura do Windows 11 e Segoe UI Variable, com Segoe UI como alternativa. Código e interface estão em inglês; a documentação está em português. Não existem intervalos automáticos, sincronização em nuvem ou duração configurável nesta versão.
+## Local data
 
-O cabeçalho fica separado do conteúdo em duas linhas de Grid. O bloco de estatísticas tem largura de 748 unidades WPF e fica centralizado horizontalmente, mantendo os alinhamentos internos dos controles e textos. Os gráficos possuem largura explícita para que suas coordenadas não gerem espaço lateral excedente.
+History and tasks are saved in `%LOCALAPPDATA%\Seal`, in `sessions.json` and `tasks.json`. The timer does not automatically resume when the app is reopened. This version does not include automatic breaks or cloud synchronization.
 
-## Ícones
+## Development
 
-Os botões utilizam Material Icons oficiais do Google, convertidos de SVG para geometrias vetoriais nativas do WPF. Os arquivos originais estão em `Assets/MaterialIcons`, junto da licença Apache 2.0. O aplicativo não depende de fontes de ícones instaladas ou acesso à internet durante a execução. Os botões possuem dicas de ferramenta e nomes de acessibilidade; iniciar/continuar e pausar alternam os ícones de reprodução e pausa.
+Requirements: Windows and the .NET 10 SDK.
 
-Fonte: https://github.com/google/material-design-icons
-Na primeira execução do Seal, o histórico anterior de %LOCALAPPDATA%\Tomato\sessions.json é copiado para %LOCALAPPDATA%\Seal\sessions.json caso o novo arquivo ainda não exista. O arquivo antigo é preservado. Feche a versão anterior antes de usar o Seal.
+```powershell
+dotnet run --project Seal.csproj
+```
 
-## Dados temporários de visualização
+To publish a self-contained Windows x64 package:
 
-O histórico local recebeu 482 sessões fictícias para visualizar os gráficos. A interface utiliza esse mesmo histórico, sem modo de amostra ou alternância. Os oito registros existentes foram preservados. Uma cópia anterior à inclusão fica ao lado de sessions.json, com sufixo .before-fictional e data/hora. Para remover os dados fictícios posteriormente, restaure essa cópia se não precisar dos registros criados depois dela.
+```powershell
+dotnet publish Seal.csproj -c Release -r win-x64 --self-contained true -o bin/publish/win-x64
+```
 
-## Tarefas
+The code and interface are in English; documentation is available in English and Brazilian Portuguese. The architecture separates the timer, persistence, tasks, and presentation.
 
-O botão **Tasks**, ao lado de **Statistics**, abre o gerenciamento de tarefas. Digite um nome e use **Add** para criar, ou selecione uma tarefa para **Rename** ou **Remove**. Os nomes devem ter entre 1 e 15 caracteres; nomes ativos duplicados não são permitidos. A tarefa `default` é criada automaticamente e pode ser removida quando existir pelo menos outra tarefa ativa. Sua renomeação permanece bloqueada. O sistema mantém pelo menos uma tarefa ativa; o botão de remoção fica desabilitado para a última tarefa. Uma tarefa removida não é recriada ao reabrir o aplicativo, e seu histórico continua disponível nas estatísticas.
+## Project structure
 
-O seletor acima do cronômetro escolhe a tarefa da próxima sessão. A seleção fica bloqueada enquanto a sessão estiver em andamento ou pausada. Conclua ou reinicie a sessão para escolher outra tarefa. Cada sessão guarda o identificador estável da tarefa e uma cópia do seu nome no início. Renomear uma tarefa mantém suas sessões associadas; remover uma tarefa retira-a das opções de novas sessões, preservando sua identificação no histórico.
+```text
+Seal/
+├── Assets/
+│   ├── Icons/                 # App images and icon
+│   ├── MaterialIcons/         # Vector icons and license
+│   └── Theme/                 # Control styles
+├── Models/                    # Sessions, tasks, and filters
+├── Services/                  # Timer, statistics, and persistence
+├── App.xaml / App.xaml.cs     # Resources and startup
+├── MainWindow.xaml(.cs)       # Timer and task selection
+├── StatisticsWindow.xaml(.cs) # Calendar and metrics
+├── TasksWindow.xaml(.cs)      # Task management
+├── WindowDrag.cs              # Window dragging
+├── Seal.csproj / Seal.slnx    # Project and solution
+├── README.md                  # English documentation
+├── README.pt-BR.md            # Portuguese documentation
+└── LICENSE                    # GNU GPL v3.0
+```
 
-Na janela **Statistics**, o seletor no cabeçalho filtra o calendário anual, os indicadores diários e o gráfico por tarefa. **All tasks** mostra os totais gerais. Tarefas removidas não aparecem no filtro nem nos totais, calendário ou gráficos das estatísticas. Seus registros permanecem salvos no histórico. Sessões antigas, incluindo os dados fictícios já existentes, pertencem à tarefa `default`.
+`FocusTimer` controls sessions. `TaskCatalog` manages and validates tasks. JSON repositories implement the persistence interfaces, and `StatisticsService` queries history. Dependencies are composed in `App.xaml.cs`. The `bin/`, `obj/`, and `.vs/` folders contain generated files.
 
-As tarefas ficam em `%LOCALAPPDATA%\Seal\tasks.json`. `ITaskRepository` abstrai a persistência, `JsonTaskRepository` salva o arquivo por substituição e `TaskCatalog` valida nomes e controla criação, renomeação e remoção. As janelas compartilham o catálogo e atualizam os seletores após mudanças.
+## License
+
+Released under the **GNU GPL v3.0**. See [LICENSE](LICENSE).
+
+[Google Material Icons](https://github.com/google/material-design-icons) use the Apache 2.0 license, included in [Assets/MaterialIcons/LICENSE.txt](Assets/MaterialIcons/LICENSE.txt).

@@ -17,8 +17,11 @@
                 <Button DockPanel.Dock="Right" Click="OpenTasks" Padding="8,2" ToolTip="Manage tasks" AutomationProperties.Name="Manage tasks" Width="35" Height="24">
                     <Path Style="{StaticResource MaterialIconStyle}" Data="{StaticResource MaterialTasks}" Width="12" Height="12" />
                 </Button>
+                <Button DockPanel.Dock="Right" Click="OpenSettings" Padding="8,2" ToolTip="Settings" AutomationProperties.Name="Settings" Width="35" Height="24">
+                    <Path Style="{StaticResource MaterialIconStyle}" Data="{StaticResource MaterialSettings}" Width="12" Height="12"/>
+                </Button>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="Seal" Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="16" />
+                    <TextBlock x:Name="AppNameLabel" Text="Seal" Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="16" />
                 </StackPanel>
             </DockPanel>
             <ComboBox x:Name="TaskPicker" Grid.Row="1" Width="170" HorizontalAlignment="Left" Margin="0,6,0,0" Height="24" ItemTemplate="{StaticResource TaskNameTemplate}" SelectedValuePath="Id" ToolTip="Task for this focus session" AutomationProperties.Name="Focus task" />

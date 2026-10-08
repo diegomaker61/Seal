@@ -2,11 +2,12 @@
 
 [English](README.md) | **Português (Brasil)**
 
-Seal é um aplicativo open source de foco para Windows, desenvolvido em C# e WPF com .NET 10. Combina um cronômetro Pomodoro de 30 minutos, tarefas e estatísticas em uma interface minimalista inspirada no tema escuro do Windows 11.
+Seal é um aplicativo open source de foco para Windows, desenvolvido em C# e WPF com .NET 10. Combina um cronômetro Pomodoro configurável de 10 a 60 minutos, tarefas e estatísticas em uma interface minimalista inspirada no tema escuro do Windows 11.
 
 ## Recursos
 
 - Cronômetro com pausa, retomada, reinício e barra de progresso.
+- Borda visual de foco em todos os monitores conectados.
 - Janelas sempre no topo, com bordas arredondadas e movimentação por arraste.
 - Gerenciamento de tarefas e associação das sessões à tarefa escolhida.
 - Calendário anual, indicadores diários e gráfico de sessões por hora.
@@ -20,13 +21,23 @@ Baixe o pacote para Windows na seção **Releases**, extraia o ZIP e execute `Se
 
 1. Escolha uma tarefa no seletor acima do cronômetro.
 2. Clique em **Play** para iniciar. Use **Pause** para pausar e **Play** para continuar.
-3. Use **Reset** para registrar o tempo realizado e preparar outra sessão. Ao concluir os 30 minutos, um som sinaliza o término.
+3. Use **Reset** para registrar o tempo realizado e preparar outra sessão. Ao concluir o tempo configurado, um som sinaliza o término.
 4. Abra **Tasks** para adicionar, renomear ou remover tarefas. Os nomes aceitam até 15 caracteres. É necessário manter pelo menos uma tarefa; `default` pode ser removida quando outra existir.
 5. Abra **Statistics** para consultar o histórico. Selecione uma tarefa ou **All tasks**, navegue entre anos e dias ou clique em um dia do calendário. Os botões **Today** e **Refresh** retornam ao dia atual e atualizam os dados.
+
+**Atalho global:** use `Ctrl + Alt + P` para iniciar, pausar ou continuar a sessão, mesmo em outro aplicativo. Se a combinação já estiver registrada por outro programa ou outra versão do Seal, a dica do botão informa que o atalho está indisponível.
 
 Passe o mouse sobre os ícones para ver suas funções. Arraste uma área vazia ou o cabeçalho para mover as janelas. A tarefa de uma sessão só pode ser trocada após concluí-la ou reiniciá-la.
 
 Nas estatísticas, **Rounds** conta sessões concluídas, **Focus time** inclui o tempo das sessões parciais e **Completion** mostra a proporção de sessões concluídas. Tarefas removidas ficam ocultas nos filtros e totais.
+
+Durante a contagem, uma borda discreta de 2 pixels, na cor #03FCEC, aparece em cada monitor conectado. Ela desaparece ao pausar, reiniciar ou concluir a sessão, não recebe foco e permite clicar normalmente nos outros aplicativos.
+
+## Configurações
+
+Abra **Settings** pelo botão de engrenagem ao lado de **Tasks**. Escolha o atalho clicando no campo e pressionando uma combinação com Ctrl, Alt ou Windows; atalhos já utilizados por outro aplicativo são recusados. Você também pode ativar ou desativar a borda em todos os monitores, escolher **Start with Windows** e definir o foco entre 10 e 60 minutos (padrão: 30). Clique em **Save** para aplicar ou **Cancel** para descartar.
+
+A borda e o atalho mudam imediatamente. A duração vale para a próxima sessão, sem alterar a contagem em andamento. As preferências ficam em `settings.json`, na pasta de dados do perfil. A inicialização com Windows usa uma entrada por usuário e por perfil; ativá-la na build de desenvolvimento não altera a configuração da versão instalada.
 
 ## Dados locais
 
@@ -35,6 +46,8 @@ O histórico e as tarefas são salvos em `%LOCALAPPDATA%\Seal`, nos arquivos `se
 ## Desenvolvimento
 
 Requisitos: Windows e SDK .NET 10.
+
+Builds **Debug** usam `%LOCALAPPDATA%\Seal.Development`, mostram **Seal (Dev)** e podem rodar ao lado da versão instalada. Seus testes não alteram o histórico ou as tarefas reais, nem importam o histórico antigo. Builds **Release** usam `%LOCALAPPDATA%\Seal` e devem ser utilizadas nas releases públicas.
 
 ```powershell
 dotnet run --project Seal.csproj

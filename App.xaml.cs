@@ -9,7 +9,7 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
-        instanceGuard = new SingleInstanceGuard(@"Local\Seal.Desktop.SingleInstance");
+        instanceGuard = new SingleInstanceGuard(AppDataPaths.InstanceMutexName);
 
         if (!instanceGuard.IsAcquired)
         {
@@ -20,9 +20,11 @@ public partial class App : Application
         base.OnStartup(e);
 
         var repository = new JsonSessionRepository();
-        var timer = new FocusTimer(repository, TimeSpan.FromMinutes(30));
+        var settingsRepository = new SettingsRepository();
+        var settings = settingsRepository.Load();
+        var timer = new FocusTimer(repository, TimeSpan.FromMinutes(settings.FocusMinutes));
         var tasks = new TaskCatalog(new JsonTaskRepository());
-        MainWindow = new MainWindow(timer, new StatisticsService(repository), tasks);
+        MainWindow = new MainWindow(timer, new StatisticsService(repository), tasks, settings, settingsRepository);
         MainWindow.Show();
     }
 

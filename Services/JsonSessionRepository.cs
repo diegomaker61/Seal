@@ -6,13 +6,17 @@ namespace Seal.Services;
 
 public sealed class JsonSessionRepository : ISessionRepository
 {
-    private readonly string filePath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "Seal",
-        "sessions.json");
+    private readonly string filePath;
 
-    public JsonSessionRepository()
+    public JsonSessionRepository(string? customFilePath = null)
     {
+        filePath = customFilePath ?? AppDataPaths.SessionsFile;
+
+        if (customFilePath is not null || AppDataPaths.IsDevelopment)
+        {
+            return;
+        }
+
         var previousFilePath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "Tomato",

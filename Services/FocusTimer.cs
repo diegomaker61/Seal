@@ -9,9 +9,10 @@ public sealed class FocusTimer(ISessionRepository repository, TimeSpan duration)
     private Guid sessionId;
     private DateTimeOffset startedAt;
     private bool completed;
+    private TimeSpan configuredDuration = duration;
     private FocusTask sessionTask = new(Guid.Empty, "default");
 
-    public TimeSpan Duration { get; } = duration;
+    public TimeSpan Duration { get; private set; } = duration;
     public bool IsRunning => stopwatch.IsRunning;
     public TimeSpan Elapsed => stopwatch.Elapsed < Duration ? stopwatch.Elapsed : Duration;
     public TimeSpan Remaining => Duration - Elapsed;
@@ -26,12 +27,27 @@ public sealed class FocusTimer(ISessionRepository repository, TimeSpan duration)
 
         if (!HasStarted)
         {
+            Duration = configuredDuration;
             sessionId = Guid.NewGuid();
             startedAt = DateTimeOffset.Now;
             sessionTask = task ?? new FocusTask(Guid.Empty, "default");
         }
 
         stopwatch.Start();
+    }
+
+    public void ConfigureDuration(TimeSpan duration)
+    {
+        if (duration < TimeSpan.FromMinutes(10) || duration > TimeSpan.FromMinutes(60))
+        {
+            throw new ArgumentOutOfRangeException(nameof(duration));
+        }
+
+        configuredDuration = duration;
+        if (!HasStarted)
+        {
+            Duration = duration;
+        }
     }
 
     public void Pause()
@@ -76,5 +92,6 @@ public sealed class FocusTimer(ISessionRepository repository, TimeSpan duration)
         stopwatch.Reset();
         sessionId = Guid.Empty;
         completed = false;
+        Duration = configuredDuration;
     }
 }

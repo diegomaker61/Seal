@@ -10,10 +10,7 @@ public sealed class JsonTaskRepository : ITaskRepository
 
     public JsonTaskRepository(string? filePath = null)
     {
-        this.filePath = filePath ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Seal",
-            "tasks.json");
+        this.filePath = filePath ?? AppDataPaths.TasksFile;
     }
 
     public IReadOnlyList<FocusTask> ReadAll() => File.Exists(filePath)

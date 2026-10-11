@@ -4,6 +4,8 @@ namespace Seal.Services;
 
 public sealed class TaskCatalog
 {
+    public const int MaximumActiveTasks = 20;
+
     private readonly ITaskRepository repository;
     private List<FocusTask> tasks;
 
@@ -17,6 +19,30 @@ public sealed class TaskCatalog
             var updated = tasks.Append(new FocusTask(Guid.Empty, "default")).ToList();
             repository.SaveAll(updated);
             tasks = updated;
+        }
+        var assigned = tasks.Where(task => !task.IsDeleted && TaskColorPalette.Contains(task.ColorHex))
+            .Select(task => task.ColorHex).ToList();
+        var updatedColors = tasks.ToList();
+
+        foreach (var task in tasks.OrderBy(task => task.IsDeleted))
+        {
+            if (TaskColorPalette.Contains(task.ColorHex))
+            {
+                continue;
+            }
+
+            var color = TaskColorPalette.Next(assigned);
+            updatedColors[updatedColors.FindIndex(item => item.Id == task.Id)] = task with { ColorHex = color };
+            if (!task.IsDeleted)
+            {
+                assigned.Add(color);
+            }
+        }
+
+        if (!tasks.SequenceEqual(updatedColors))
+        {
+            repository.SaveAll(updatedColors);
+            tasks = updatedColors;
         }
     }
 
@@ -32,7 +58,13 @@ public sealed class TaskCatalog
 
     public FocusTask Add(string name)
     {
-        var task = new FocusTask(Guid.NewGuid(), ValidateName(name));
+        if (ActiveTasks().Count >= MaximumActiveTasks)
+        {
+            throw new ArgumentException($"You can have up to {MaximumActiveTasks} active tasks. Remove a task before adding another.");
+        }
+
+        var color = TaskColorPalette.Next(ActiveTasks().Select(task => task.ColorHex));
+        var task = new FocusTask(Guid.NewGuid(), ValidateName(name), ColorHex: color);
         Commit(tasks.Append(task).ToList());
         return task;
     }

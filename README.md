@@ -23,7 +23,7 @@ Download the Windows package from **Releases**, extract the ZIP, and run `Seal.e
 2. Click **Play** to start. Use **Pause** to pause and **Play** to resume.
 3. Use **Reset** to save the focus time and prepare another session. A sound signals the end of the configured session.
 4. Open **Tasks** to add, rename, or remove tasks. Names can contain up to 15 characters. At least one task must remain; `default` can be removed when another task exists.
-5. Open **Statistics** to view your history. Select a task or **All tasks**, navigate between years and days, or click a calendar day. **Today** returns to the current day, and **Refresh** reloads the data.
+5. Open **Statistics** to view your history. Select a task, navigate between years and days, or click a calendar day. **Today** returns to the current day, and **Refresh** reloads the data.
 
 **Global shortcut:** press `Ctrl + Alt + P` to start, pause, or resume the session while using another app. If another program or Seal version has registered this combination, the timer button tooltip indicates that the shortcut is unavailable.
 
@@ -89,3 +89,7 @@ Seal/
 Released under the **GNU GPL v3.0**. See [LICENSE](LICENSE).
 
 [Google Material Icons](https://github.com/google/material-design-icons) use the Apache 2.0 license, included in [Assets/MaterialIcons/LICENSE.txt](Assets/MaterialIcons/LICENSE.txt).
+
+## Task colors
+
+Tasks automatically receive a color from a predefined palette of 20 vivid colors. Colors are saved in tasks.json and preserved when renaming. Pickers and the task list show a color marker; the calendar, bars, and metrics use the selected task color. Statistics always show one task at a time, without All tasks. Up to 20 active tasks are allowed, including default. Removing a task frees its slot and color. Existing tasks receive a color automatically without changing their sessions.

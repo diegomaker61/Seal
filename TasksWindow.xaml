@@ -18,7 +18,7 @@
             <ListBox x:Name="TaskList" Grid.Row="1" ItemTemplate="{StaticResource TaskNameTemplate}" SelectionChanged="SelectTask" Background="{StaticResource SurfaceBrush}" Foreground="#F5F5F5" BorderThickness="0" Padding="4"/>
             <TextBox x:Name="TaskNameInput" Grid.Row="2" Margin="0,12,0,12" MaxLength="15" ToolTip="Task name (up to 15 characters)" AutomationProperties.Name="Task name"/>
             <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Content="Add" Click="AddTask" Background="{StaticResource AccentBrush}"/>
+                <Button x:Name="AddButton" Content="Add" Click="AddTask" Background="{StaticResource AccentBrush}"/>
                 <Button x:Name="RenameButton" Content="Rename" Click="RenameTask"/>
                 <Button x:Name="RemoveButton" Content="Remove" Click="RemoveTask"/>
             </StackPanel>

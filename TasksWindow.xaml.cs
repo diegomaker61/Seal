@@ -25,6 +25,8 @@ public partial class TasksWindow : Window
 
     private void RefreshTasks(Guid? selectedId)
     {
+        AddButton.IsEnabled = tasks.ActiveTasks().Count < TaskCatalog.MaximumActiveTasks;
+        AddButton.ToolTip = $"Up to {TaskCatalog.MaximumActiveTasks} active tasks (including default).";
         TaskList.ItemsSource = tasks.ActiveTasks();
         TaskList.SelectedItem = tasks.ActiveTasks().FirstOrDefault(task => task.Id == selectedId)
             ?? tasks.ActiveTasks().First();

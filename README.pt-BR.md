@@ -23,7 +23,7 @@ Baixe o pacote para Windows na seção **Releases**, extraia o ZIP e execute `Se
 2. Clique em **Play** para iniciar. Use **Pause** para pausar e **Play** para continuar.
 3. Use **Reset** para registrar o tempo realizado e preparar outra sessão. Ao concluir o tempo configurado, um som sinaliza o término.
 4. Abra **Tasks** para adicionar, renomear ou remover tarefas. Os nomes aceitam até 15 caracteres. É necessário manter pelo menos uma tarefa; `default` pode ser removida quando outra existir.
-5. Abra **Statistics** para consultar o histórico. Selecione uma tarefa ou **All tasks**, navegue entre anos e dias ou clique em um dia do calendário. Os botões **Today** e **Refresh** retornam ao dia atual e atualizam os dados.
+5. Abra **Statistics** para consultar o histórico. Selecione uma tarefa, navegue entre anos e dias ou clique em um dia do calendário. Os botões **Today** e **Refresh** retornam ao dia atual e atualizam os dados.
 
 **Atalho global:** use `Ctrl + Alt + P` para iniciar, pausar ou continuar a sessão, mesmo em outro aplicativo. Se a combinação já estiver registrada por outro programa ou outra versão do Seal, a dica do botão informa que o atalho está indisponível.
 
@@ -89,3 +89,7 @@ Seal/
 Distribuído sob a **GNU GPL v3.0**. Consulte [LICENSE](LICENSE).
 
 Os [Material Icons do Google](https://github.com/google/material-design-icons) utilizam a licença Apache 2.0, disponível em [Assets/MaterialIcons/LICENSE.txt](Assets/MaterialIcons/LICENSE.txt).
+
+## Cores das tarefas
+
+Cada tarefa recebe automaticamente uma cor de uma paleta de 20 cores vivas. A cor é salva em tasks.json e permanece ao renomear. Os seletores e a lista mostram um marcador colorido; calendário, barras e indicadores usam a cor da tarefa selecionada. As estatísticas sempre exibem uma tarefa por vez, sem All tasks. São permitidas até 20 tarefas ativas, incluindo default. Remover uma tarefa libera sua vaga e cor. Tarefas existentes recebem uma cor automaticamente, sem alterar suas sessões.

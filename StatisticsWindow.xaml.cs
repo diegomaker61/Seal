@@ -29,14 +29,18 @@ public partial class StatisticsWindow : Window
 
     private IReadOnlyList<FocusSession> ReadSessions()
     {
-        var activeTaskIds = tasks.ActiveTasks().Select(task => task.Id).ToHashSet();
-        var selectedId = (TaskFilterPicker.SelectedItem as TaskFilter)?.Id;
+        if (TaskFilterPicker.SelectedItem is not TaskFilter selected ||
+            !tasks.ActiveTasks().Any(task => task.Id == selected.Id))
+        {
+            return [];
+        }
 
-        return statistics.ReadAll()
-            .Where(session => activeTaskIds.Contains(session.TaskId))
-            .Where(session => selectedId is null || session.TaskId == selectedId)
-            .ToList();
+        return statistics.ReadAll().Where(session => session.TaskId == selected.Id).ToList();
     }
+
+    private Color SelectedTaskColor => TaskFilterPicker.SelectedItem is TaskFilter selected
+        ? (Color)ColorConverter.ConvertFromString(selected.ColorHex)
+        : Color.FromRgb(48, 48, 48);
 
     private void TasksChanged(object? sender, EventArgs e)
     {
@@ -47,16 +51,21 @@ public partial class StatisticsWindow : Window
     private void RefreshTaskFilters()
     {
         var selectedId = (TaskFilterPicker.SelectedItem as TaskFilter)?.Id;
-        var filters = new List<TaskFilter> { new(null, "All tasks") };
-        filters.AddRange(tasks.ActiveTasks().Select(task => new TaskFilter(task.Id, task.Name)));
+        var filters = tasks.ActiveTasks()
+            .Select(task => new TaskFilter(task.Id, task.Name, task.ColorHex)).ToList();
         TaskFilterPicker.ItemsSource = filters;
-        TaskFilterPicker.SelectedItem = filters.FirstOrDefault(filter => filter.Id == selectedId) ?? filters[0];
+        TaskFilterPicker.SelectedItem = filters.FirstOrDefault(filter => filter.Id == selectedId)
+            ?? filters.FirstOrDefault();
     }
 
     public void RefreshData()
     {
         try
         {
+            var accent = new SolidColorBrush(SelectedTaskColor);
+            RoundsLabel.Foreground = accent;
+            FocusLabel.Foreground = accent;
+            CompletionLabel.Foreground = accent;
             DrawAnnualActivity();
             DrawDailyActivity();
         }
@@ -75,7 +84,11 @@ public partial class StatisticsWindow : Window
             .ToDictionary(group => group.Key, group => group.Sum(session => session.FocusSeconds));
         var firstDay = new DateTime(selectedYear, 1, 1);
         var start = firstDay.AddDays(-(int)firstDay.DayOfWeek);
-        string[] colors = ["#303030", "#303D40", "#305057", "#2F626B", "#FF2F7580"];
+        var accent = SelectedTaskColor;
+        var colors = Enumerable.Range(0, 5).Select(level => new SolidColorBrush(Color.FromRgb(
+            (byte)(48 + (accent.R - 48) * level / 4.0),
+            (byte)(48 + (accent.G - 48) * level / 4.0),
+            (byte)(48 + (accent.B - 48) * level / 4.0)))).ToArray();
 
         for (var month = 1; month <= 12; month++)
         {
@@ -93,7 +106,7 @@ public partial class StatisticsWindow : Window
                 Height = 11,
                 RadiusX = 2,
                 RadiusY = 2,
-                Fill = (Brush)new BrushConverter().ConvertFromString(colors[level])!,
+                Fill = colors[level],
                 Stroke = day == selectedDay ? Brushes.White : Brushes.Transparent,
                 StrokeThickness = 1,
                 ToolTip = $"{day:yyyy-MM-dd}: {seconds / 60:0} focus minutes",
@@ -137,7 +150,7 @@ public partial class StatisticsWindow : Window
                 Height = height,
                 RadiusX = 2,
                 RadiusY = 2,
-                Fill = counts[hour] == 0 ? new SolidColorBrush(Color.FromRgb(56, 56, 56)) : (Brush)FindResource("AccentBrush"),
+                Fill = counts[hour] == 0 ? new SolidColorBrush(Color.FromRgb(56, 56, 56)) : new SolidColorBrush(SelectedTaskColor),
                 ToolTip = $"{hour:00}:00 — {counts[hour]} completed sessions"
             };
             Canvas.SetLeft(bar, hour * 31);

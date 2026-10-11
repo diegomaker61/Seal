@@ -35,7 +35,7 @@ While the timer is running, a subtle 2-pixel border in #03FCEC appears on each c
 
 ## Settings
 
-Open **Settings** using the gear button next to **Tasks**. Click the shortcut field and press a combination with Ctrl, Alt or Windows; shortcuts already in use are rejected. You can also toggle the border on all monitors, choose **Start with Windows**, and set focus duration between 10 and 60 minutes (default: 30). Click **Save** to apply or **Cancel** to discard.
+Open **Settings** using the gear button next to **Tasks**. Click **Change shortcut**, then press Ctrl, Alt or Windows together with a key; the button indicates when it is listening. Press Esc to cancel; shortcuts already in use are rejected. You can also toggle the border on all monitors, choose **Start with Windows**, and set focus duration between 10 and 60 minutes (default: 30). Click **Save** to apply or **Cancel** to discard.
 
 Border and shortcut changes apply immediately. Duration changes apply to the next session without modifying an ongoing countdown. Preferences are stored in `settings.json` in the profile's data folder. Windows startup uses a per-user, per-profile entry; enabling it in a development build does not change the installed version's startup settings.
 
@@ -93,3 +93,6 @@ Released under the **GNU GPL v3.0**. See [LICENSE](LICENSE).
 ## Task colors
 
 Tasks automatically receive a color from a predefined palette of 20 vivid colors. Colors are saved in tasks.json and preserved when renaming. Pickers and the task list show a color marker; the calendar, bars, and metrics use the selected task color. Statistics always show one task at a time, without All tasks. Up to 20 active tasks are allowed, including default. Removing a task frees its slot and color. Existing tasks receive a color automatically without changing their sessions.
+
+
+Closing Seal saves the remaining focus time and task. Reopening restores the unfinished session paused; time spent with the app closed is excluded. Resetting or completing a session clears its saved timer state.

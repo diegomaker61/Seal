@@ -35,7 +35,7 @@ Durante a contagem, uma borda discreta de 2 pixels, na cor #03FCEC, aparece em c
 
 ## Configurações
 
-Abra **Settings** pelo botão de engrenagem ao lado de **Tasks**. Escolha o atalho clicando no campo e pressionando uma combinação com Ctrl, Alt ou Windows; atalhos já utilizados por outro aplicativo são recusados. Você também pode ativar ou desativar a borda em todos os monitores, escolher **Start with Windows** e definir o foco entre 10 e 60 minutos (padrão: 30). Clique em **Save** para aplicar ou **Cancel** para descartar.
+Abra **Settings** pelo botão de engrenagem ao lado de **Tasks**. Clique em **Change shortcut** e pressione Ctrl, Alt ou Windows junto com uma tecla; o botão indica quando está aguardando a combinação. Pressione Esc para cancelar; atalhos já utilizados por outro aplicativo são recusados. Você também pode ativar ou desativar a borda em todos os monitores, escolher **Start with Windows** e definir o foco entre 10 e 60 minutos (padrão: 30). Clique em **Save** para aplicar ou **Cancel** para descartar.
 
 A borda e o atalho mudam imediatamente. A duração vale para a próxima sessão, sem alterar a contagem em andamento. As preferências ficam em `settings.json`, na pasta de dados do perfil. A inicialização com Windows usa uma entrada por usuário e por perfil; ativá-la na build de desenvolvimento não altera a configuração da versão instalada.
 
@@ -93,3 +93,6 @@ Os [Material Icons do Google](https://github.com/google/material-design-icons) u
 ## Cores das tarefas
 
 Cada tarefa recebe automaticamente uma cor de uma paleta de 20 cores vivas. A cor é salva em tasks.json e permanece ao renomear. Os seletores e a lista mostram um marcador colorido; calendário, barras e indicadores usam a cor da tarefa selecionada. As estatísticas sempre exibem uma tarefa por vez, sem All tasks. São permitidas até 20 tarefas ativas, incluindo default. Remover uma tarefa libera sua vaga e cor. Tarefas existentes recebem uma cor automaticamente, sem alterar suas sessões.
+
+
+Ao fechar o Seal, o tempo restante e a tarefa da sessão são salvos. Ao abrir novamente, a sessão incompleta retorna pausada; o período com o aplicativo fechado não é contado. Reiniciar ou concluir a sessão limpa o estado salvo do cronômetro.

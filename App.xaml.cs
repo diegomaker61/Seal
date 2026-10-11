@@ -22,7 +22,9 @@ public partial class App : Application
         var repository = new JsonSessionRepository();
         var settingsRepository = new SettingsRepository();
         var settings = settingsRepository.Load();
-        var timer = new FocusTimer(repository, TimeSpan.FromMinutes(settings.FocusMinutes));
+        var timerState = new TimerStateRepository(System.IO.Path.Combine(AppDataPaths.DirectoryPath, "timer-state.json"));
+        var timer = new FocusTimer(repository, TimeSpan.FromMinutes(settings.FocusMinutes), timerState);
+        timer.Restore();
         var tasks = new TaskCatalog(new JsonTaskRepository());
         MainWindow = new MainWindow(timer, new StatisticsService(repository), tasks, settings, settingsRepository);
         MainWindow.Show();

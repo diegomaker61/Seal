@@ -9,6 +9,7 @@ namespace Seal;
 public partial class SettingsWindow : Window
 {
     private AppSettings draft;
+    private bool isCapturingShortcut;
     private readonly Action<AppSettings> applySettings;
 
     public SettingsWindow(AppSettings settings, Action<AppSettings> applySettings)
@@ -16,35 +17,98 @@ public partial class SettingsWindow : Window
         InitializeComponent();
         draft = settings;
         this.applySettings = applySettings;
-        ShortcutInput.Text = draft.ShortcutLabel;
+        ShortcutPreview.Text = draft.ShortcutLabel;
         BorderOption.IsChecked = draft.ShowBorder;
         StartupOption.IsChecked = draft.StartWithWindows;
         DurationInput.ItemsSource = Enumerable.Range(1, 6).Select(value => value * 10);
         DurationInput.SelectedItem = Math.Clamp((int)Math.Round(draft.FocusMinutes / 10.0, MidpointRounding.AwayFromZero) * 10, 10, 60);
     }
 
+    private void BeginShortcutCapture(object sender, RoutedEventArgs e)
+    {
+        isCapturingShortcut = true;
+        UpdateShortcutPreview();
+        ShortcutButton.Content = "Press your shortcut…";
+        ShortcutButton.Background = (System.Windows.Media.Brush)FindResource("AccentBrush");
+        ShortcutHint.Text = "Listening… Press Ctrl/Alt/Windows + a key. Esc to cancel.";
+        FeedbackLabel.Text = "";
+        ShortcutButton.Focus();
+    }
+
+    private void StopShortcutCapture(object sender, KeyboardFocusChangedEventArgs e) => EndShortcutCapture();
+
+    private void EndShortcutCapture()
+    {
+        isCapturingShortcut = false;
+        ShortcutPreview.Text = draft.ShortcutLabel;
+        ShortcutButton.Content = "Change shortcut";
+        ShortcutButton.ClearValue(System.Windows.Controls.Control.BackgroundProperty);
+        ShortcutHint.Text = "Click Change shortcut, then press your combination.";
+    }
+
     private void CaptureShortcut(object sender, KeyEventArgs e)
     {
-        if (e.Key == Key.Tab)
+        if (!isCapturingShortcut)
         {
             return;
         }
 
         e.Handled = true;
         var key = e.Key == Key.System ? e.SystemKey : e.Key;
-        var candidate = draft with { ShortcutKey = key, ShortcutModifiers = Keyboard.Modifiers };
+        if (key == Key.Escape)
+        {
+            EndShortcutCapture();
+            return;
+        }
 
+        UpdateShortcutPreview(key);
+
+        if (key is Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt or
+            Key.LeftShift or Key.RightShift or Key.LWin or Key.RWin)
+        {
+            return;
+        }
+
+        var candidate = draft with { ShortcutKey = key, ShortcutModifiers = Keyboard.Modifiers };
         try
         {
             candidate.Validate();
             draft = candidate;
-            ShortcutInput.Text = draft.ShortcutLabel;
-            FeedbackLabel.Text = "";
+            ShortcutPreview.Text = draft.ShortcutLabel;
+            EndShortcutCapture();
+            ShortcutHint.Text = "Shortcut captured. Click Save to apply.";
         }
         catch (ArgumentException)
         {
-            FeedbackLabel.Text = "Use Ctrl, Alt or Windows together with a key.";
+            ShortcutHint.Text = "Use Ctrl, Alt or Windows together with a key. Esc to cancel.";
         }
+    }
+
+    private void PreviewShortcutRelease(object sender, KeyEventArgs e)
+    {
+        if (isCapturingShortcut)
+        {
+            e.Handled = true;
+            UpdateShortcutPreview();
+        }
+    }
+
+    private void UpdateShortcutPreview(Key key = Key.None)
+    {
+        var modifiers = Keyboard.Modifiers;
+        var parts = new List<string>();
+        if (modifiers.HasFlag(ModifierKeys.Control)) parts.Add("Ctrl");
+        if (modifiers.HasFlag(ModifierKeys.Alt)) parts.Add("Alt");
+        if (modifiers.HasFlag(ModifierKeys.Shift)) parts.Add("Shift");
+        if (modifiers.HasFlag(ModifierKeys.Windows)) parts.Add("Windows");
+
+        if (key is not (Key.None or Key.LeftCtrl or Key.RightCtrl or Key.LeftAlt or Key.RightAlt or
+            Key.LeftShift or Key.RightShift or Key.LWin or Key.RWin))
+        {
+            parts.Add(key is >= Key.D0 and <= Key.D9 ? ((int)key - (int)Key.D0).ToString() : key.ToString());
+        }
+
+        ShortcutPreview.Text = parts.Count == 0 ? "Waiting for keys…" : string.Join(" + ", parts);
     }
 
     private void SaveSettings(object sender, RoutedEventArgs e)

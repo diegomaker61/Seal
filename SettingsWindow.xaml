@@ -9,8 +9,15 @@
                 <TextBlock Text="Settings" FontSize="24" FontWeight="SemiBold"/>
             </DockPanel>
             <TextBlock Text="Global shortcut" Margin="0,0,0,6"/>
-            <TextBox x:Name="ShortcutInput" IsReadOnly="True" PreviewKeyDown="CaptureShortcut" ToolTip="Click here and press your shortcut"/>
-            <TextBlock Text="Click the field and press Ctrl/Alt/Windows + a key." FontSize="11" Foreground="#AAAAAA" TextWrapping="Wrap" Margin="0,6,0,16"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="ShortcutPreview" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,12,0"/>
+                <Button x:Name="ShortcutButton" Grid.Column="1" Content="Change shortcut" Click="BeginShortcutCapture" PreviewKeyDown="CaptureShortcut" PreviewKeyUp="PreviewShortcutRelease" LostKeyboardFocus="StopShortcutCapture" AutomationProperties.Name="Change global shortcut"/>
+            </Grid>
+            <TextBlock x:Name="ShortcutHint" Text="Click Change shortcut, then press your combination." FontSize="11" Foreground="#AAAAAA" TextWrapping="Wrap" Margin="0,6,0,16"/>
             <CheckBox x:Name="BorderOption" Content="Show focus border on all monitors" Foreground="#FFFFFF" Margin="0,0,0,12"/>
             <CheckBox x:Name="StartupOption" Content="Start with Windows" Foreground="#FFFFFF" Margin="0,0,0,20"/>
             <TextBlock Text="Focus duration (10–60 minutes)" Margin="0,0,0,6"/>

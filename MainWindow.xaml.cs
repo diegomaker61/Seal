@@ -35,6 +35,7 @@ public partial class MainWindow : Window
         timerShortcut = new GlobalTimerShortcut(this, () => ToggleTimer(this, new RoutedEventArgs()), this.settings);
         tasks.Changed += TasksChanged;
         RefreshTaskPicker();
+        Refresh(null, EventArgs.Empty);
         refreshTimer.Tick += Refresh;
         refreshTimer.Start();
         Closing += (_, _) =>
@@ -148,7 +149,9 @@ public partial class MainWindow : Window
 
     private void RefreshTaskPicker()
     {
-        var selected = TaskPicker.SelectedItem as FocusTask;
+        var selected = focusTimer.HasStarted && focusTimer.Remaining > TimeSpan.Zero
+            ? focusTimer.CurrentTask
+            : TaskPicker.SelectedItem as FocusTask;
         var available = tasks.ActiveTasks().ToList();
 
         if (selected is not null && focusTimer.HasStarted && focusTimer.Remaining > TimeSpan.Zero &&

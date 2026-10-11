@@ -66,6 +66,7 @@ public partial class StatisticsWindow : Window
             RoundsLabel.Foreground = accent;
             FocusLabel.Foreground = accent;
             CompletionLabel.Foreground = accent;
+            DrawTargetProgress(accent);
             DrawAnnualActivity();
             DrawDailyActivity();
         }
@@ -73,6 +74,23 @@ public partial class StatisticsWindow : Window
         {
             EmptyLabel.Text = "Unable to read history. Check the local data file.";
         }
+    }
+
+    private void DrawTargetProgress(Brush accent)
+    {
+        var selectedId = (TaskFilterPicker.SelectedItem as TaskFilter)?.Id;
+        var task = tasks.ActiveTasks().FirstOrDefault(task => task.Id == selectedId);
+        TargetLabel.Foreground = accent;
+        if (task?.TargetMinutes is not int target)
+        {
+            TargetLabel.Text = "No goal set";
+            return;
+        }
+
+        var minutes = ReadSessions().Where(session => session.StartedAt.LocalDateTime.Date == selectedDay.Date)
+            .Sum(session => session.FocusSeconds) / 60;
+        var reached = minutes >= target;
+        TargetLabel.Text = $"DAILY GOAL · {minutes / 60:0.##} / {target / 60.0:0.##}h · {(reached ? "Reached" : "In progress")} · {minutes / target * 100:0}%";
     }
 
     private void DrawAnnualActivity()

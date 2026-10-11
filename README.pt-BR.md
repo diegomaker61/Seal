@@ -96,3 +96,6 @@ Cada tarefa recebe automaticamente uma cor de uma paleta de 20 cores vivas. A co
 
 
 Ao fechar o Seal, o tempo restante e a tarefa da sessão são salvos. Ao abrir novamente, a sessão incompleta retorna pausada; o período com o aplicativo fechado não é contado. Reiniciar ou concluir a sessão limpa o estado salvo do cronômetro.
+
+
+Selecione uma meta diária de **0h a 10h**; **0h** é o padrão e significa sem meta. Clique em **New** para selecionar uma tarefa provisória com nome em branco e uma cor atribuída. Informe o nome e clique em **Save** para criá-la. Selecione uma tarefa existente para editar nome ou meta e clique em **Save**. As estatísticas mostram o progresso do dia selecionado, incluindo sessões parciais.

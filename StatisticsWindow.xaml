@@ -15,7 +15,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <DockPanel Grid.Row="0" Background="Transparent" Margin="0,0,0,40">
+            <DockPanel Grid.Row="0" Background="Transparent" Margin="0,0,0,12">
                 <Button DockPanel.Dock="Right" Click="CloseWindow" ToolTip="Close" Width="32" Height="28" Padding="0" VerticalAlignment="Center" AutomationProperties.Name="Close">
                     <Path Style="{StaticResource StatisticsIconStyle}" Data="{StaticResource MaterialClose}" />
                 </Button>
@@ -23,6 +23,7 @@
                 <TextBlock Text="Statistics" FontSize="24" FontWeight="SemiBold" ToolTip="Drag to move" />
             </DockPanel>
             <StackPanel Grid.Row="1" Width="748" HorizontalAlignment="Center" VerticalAlignment="Top">
+                <TextBlock x:Name="TargetLabel" Height="28" VerticalAlignment="Center" ToolTip="Focus for the selected day and task"/>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                     <Button Click="PreviousYear" ToolTip="Previous" AutomationProperties.Name="Previous">
                         <Path Style="{StaticResource StatisticsIconStyle}" Data="{StaticResource MaterialPrevious}" />

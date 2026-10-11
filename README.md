@@ -96,3 +96,6 @@ Tasks automatically receive a color from a predefined palette of 20 vivid colors
 
 
 Closing Seal saves the remaining focus time and task. Reopening restores the unfinished session paused; time spent with the app closed is excluded. Resetting or completing a session clears its saved timer state.
+
+
+Select a daily goal from **0h to 10h**; **0h** is the default and means no goal. Click **New** to select a new draft with a blank name and an assigned color. Enter its name and click **Save** to create it. Select an existing task to edit its name or goal, then click **Save**. Statistics show progress for the selected day, including partial sessions.

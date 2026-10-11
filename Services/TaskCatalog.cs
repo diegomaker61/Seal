@@ -56,17 +56,49 @@ public sealed class TaskCatalog
         .ThenBy(task => task.Name, StringComparer.OrdinalIgnoreCase)
         .ToList();
 
-    public FocusTask Add(string name)
+    public FocusTask Add(string name, int? targetMinutes = null)
     {
         if (ActiveTasks().Count >= MaximumActiveTasks)
         {
             throw new ArgumentException($"You can have up to {MaximumActiveTasks} active tasks. Remove a task before adding another.");
         }
 
+        ValidateTarget(targetMinutes);
         var color = TaskColorPalette.Next(ActiveTasks().Select(task => task.ColorHex));
-        var task = new FocusTask(Guid.NewGuid(), ValidateName(name), ColorHex: color);
+        var task = new FocusTask(Guid.NewGuid(), ValidateName(name), ColorHex: color, TargetMinutes: targetMinutes);
         Commit(tasks.Append(task).ToList());
         return task;
+    }
+
+    public void Update(Guid id, string name, int? targetMinutes)
+    {
+        RequireEditable(id, allowDefault: true);
+        var current = tasks.Single(task => task.Id == id);
+        if (id == Guid.Empty && name.Trim() != current.Name)
+        {
+            throw new ArgumentException("The default task cannot be renamed.");
+        }
+
+        var validated = ValidateName(name, id);
+        ValidateTarget(targetMinutes);
+        Commit(tasks.Select(task => task.Id == id
+            ? task with { Name = validated, TargetMinutes = targetMinutes }
+            : task).ToList());
+    }
+
+    public void SetTarget(Guid id, int? targetMinutes)
+    {
+        RequireEditable(id, allowDefault: true);
+        ValidateTarget(targetMinutes);
+        Commit(tasks.Select(task => task.Id == id ? task with { TargetMinutes = targetMinutes } : task).ToList());
+    }
+
+    private static void ValidateTarget(int? minutes)
+    {
+        if (minutes.HasValue && (minutes.Value is < 60 or > 600 || minutes.Value % 60 != 0))
+        {
+            throw new ArgumentException("Choose a daily goal between 1h and 10h.");
+        }
     }
 
     public void Rename(Guid id, string name)

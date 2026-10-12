@@ -83,14 +83,16 @@ public partial class StatisticsWindow : Window
         TargetLabel.Foreground = accent;
         if (task?.TargetMinutes is not int target)
         {
-            TargetLabel.Text = "No goal set";
+            TargetLabel.Text = "—";
+            TargetLabel.ToolTip = "No daily goal set";
             return;
         }
 
         var minutes = ReadSessions().Where(session => session.StartedAt.LocalDateTime.Date == selectedDay.Date)
             .Sum(session => session.FocusSeconds) / 60;
         var reached = minutes >= target;
-        TargetLabel.Text = $"DAILY GOAL · {minutes / 60:0.##} / {target / 60.0:0.##}h · {(reached ? "Reached" : "In progress")} · {minutes / target * 100:0}%";
+        TargetLabel.Text = $"{minutes / 60:0.##}/{target / 60.0:0.##}h";
+        TargetLabel.ToolTip = $"{(reached ? "Reached" : "In progress")} · {minutes / target * 100:0}% of the daily goal";
     }
 
     private void DrawAnnualActivity()

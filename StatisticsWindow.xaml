@@ -15,7 +15,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <DockPanel Grid.Row="0" Background="Transparent" Margin="0,0,0,12">
+            <DockPanel Grid.Row="0" Background="Transparent" Margin="0,0,0,40">
                 <Button DockPanel.Dock="Right" Click="CloseWindow" ToolTip="Close" Width="32" Height="28" Padding="0" VerticalAlignment="Center" AutomationProperties.Name="Close">
                     <Path Style="{StaticResource StatisticsIconStyle}" Data="{StaticResource MaterialClose}" />
                 </Button>
@@ -23,7 +23,6 @@
                 <TextBlock Text="Statistics" FontSize="24" FontWeight="SemiBold" ToolTip="Drag to move" />
             </DockPanel>
             <StackPanel Grid.Row="1" Width="748" HorizontalAlignment="Center" VerticalAlignment="Top">
-                <TextBlock x:Name="TargetLabel" Height="28" VerticalAlignment="Center" ToolTip="Focus for the selected day and task"/>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                     <Button Click="PreviousYear" ToolTip="Previous" AutomationProperties.Name="Previous">
                         <Path Style="{StaticResource StatisticsIconStyle}" Data="{StaticResource MaterialPrevious}" />
@@ -50,7 +49,7 @@
                         <Path Style="{StaticResource StatisticsIconStyle}" Data="{StaticResource MaterialRefresh}" />
                     </Button>
                 </StackPanel>
-                <UniformGrid Columns="3" Margin="0,0,0,16">
+                <UniformGrid Columns="4" Margin="0,0,0,16">
                     <StackPanel>
                         <TextBlock Text="ROUNDS" Foreground="#AAAAAA" />
                         <TextBlock x:Name="RoundsLabel" FontSize="32" FontWeight="SemiBold" />
@@ -62,6 +61,10 @@
                     <StackPanel>
                         <TextBlock Text="COMPLETION" Foreground="#AAAAAA" />
                         <TextBlock x:Name="CompletionLabel" FontSize="32" FontWeight="SemiBold" />
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Goal" Foreground="#AAAAAA" />
+                        <TextBlock x:Name="TargetLabel" FontSize="32" FontWeight="SemiBold" />
                     </StackPanel>
                 </UniformGrid>
                 <TextBlock Text="COMPLETED SESSIONS BY START HOUR" Foreground="#AAAAAA" Margin="0,0,0,12" />

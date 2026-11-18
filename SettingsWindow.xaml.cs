@@ -19,6 +19,7 @@ public partial class SettingsWindow : Window
         this.applySettings = applySettings;
         ShortcutPreview.Text = draft.ShortcutLabel;
         BorderOption.IsChecked = draft.ShowBorder;
+        PauseMediaOption.IsChecked = draft.PauseMediaOnPause;
         StartupOption.IsChecked = draft.StartWithWindows;
         DurationInput.ItemsSource = Enumerable.Range(1, 6).Select(value => value * 10);
         DurationInput.SelectedItem = Math.Clamp((int)Math.Round(draft.FocusMinutes / 10.0, MidpointRounding.AwayFromZero) * 10, 10, 60);
@@ -124,6 +125,7 @@ public partial class SettingsWindow : Window
             {
                 FocusMinutes = minutes,
                 ShowBorder = BorderOption.IsChecked == true,
+                PauseMediaOnPause = PauseMediaOption.IsChecked == true,
                 StartWithWindows = StartupOption.IsChecked == true
             };
             settings.Validate();

@@ -99,3 +99,9 @@ Closing Seal saves the remaining focus time and task. Reopening restores the unf
 
 
 Select a daily goal from **0h to 10h**; **0h** is the default and means no goal. Click **New** to select a new draft with a blank name and an assigned color. Enter its name and click **Save** to create it. Select an existing task to edit its name or goal, then click **Save**. Statistics show progress for the selected day, including partial sessions.
+
+Enable **Pause media when pausing the timer** in Settings to pause all playing sessions exposed by Windows media controls, using either the pause button or global shortcut. Disabled by default. Players without Windows media integration cannot be controlled. Resuming the timer resumes only media successfully paused by Seal during the current app run. Resetting the timer or disabling the option clears this list.
+
+Main and Statistics share the selected task. Both selectors stay locked during an unfinished session. Hold Reset or Complete for 2 seconds; releasing early cancels. Complete marks the session completed while recording only actual focus time.
+
+For tasks with a daily Goal, the main task picker displays completed rounds today versus required rounds, e.g. **Study · 2/4 rounds**. Required rounds use the configured focus duration, rounded up; tasks without a Goal show only their name.

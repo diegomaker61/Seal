@@ -7,7 +7,8 @@ public sealed record AppSettings(
     bool ShowBorder = true,
     bool StartWithWindows = false,
     ModifierKeys ShortcutModifiers = ModifierKeys.Control | ModifierKeys.Alt,
-    Key ShortcutKey = Key.P)
+    Key ShortcutKey = Key.P,
+    bool PauseMediaOnPause = false)
 {
     public string ShortcutLabel => new KeyGesture(ShortcutKey, ShortcutModifiers).GetDisplayStringForCulture(
         System.Globalization.CultureInfo.InvariantCulture);

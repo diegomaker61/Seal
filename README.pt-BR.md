@@ -99,3 +99,9 @@ Ao fechar o Seal, o tempo restante e a tarefa da sessão são salvos. Ao abrir n
 
 
 Selecione uma meta diária de **0h a 10h**; **0h** é o padrão e significa sem meta. Clique em **New** para selecionar uma tarefa provisória com nome em branco e uma cor atribuída. Informe o nome e clique em **Save** para criá-la. Selecione uma tarefa existente para editar nome ou meta e clique em **Save**. As estatísticas mostram o progresso do dia selecionado, incluindo sessões parciais.
+
+Ative **Pause media when pausing the timer** em Settings para pausar todas as sessões em reprodução disponíveis nos controles de mídia do Windows, pelo botão de pausa ou atalho global. Desativado por padrão. Players sem integração com os controles de mídia do Windows não podem ser controlados. Ao continuar o cronômetro, somente as mídias pausadas com sucesso pelo Seal nesta execução são retomadas. Reiniciar o cronômetro ou desativar a opção limpa essa lista.
+
+Main e Statistics compartilham a tarefa selecionada. Os dois seletores ficam bloqueados durante uma sessão incompleta. Segure Reset ou Complete por 2 segundos; soltar antes cancela. Complete marca a sessão como concluída e registra somente o tempo realmente focado.
+
+Para tarefas com Goal diário, o seletor principal mostra as rodadas concluídas hoje e as necessárias, como **Study · 2/4 rounds**. O total usa a duração de foco configurada, arredondado para cima; tarefas sem Goal mostram somente o nome.

@@ -12,19 +12,36 @@ public partial class StatisticsWindow : Window
 {
     private readonly StatisticsService statistics;
     private readonly TaskCatalog tasks;
+    private readonly TaskSelection selection;
+    private bool refreshingFilters;
     private DateTime selectedDay = DateTime.Today;
     private int selectedYear = DateTime.Today.Year;
 
-    public StatisticsWindow(StatisticsService statistics, TaskCatalog tasks)
+    public StatisticsWindow(StatisticsService statistics, TaskCatalog tasks, TaskSelection? selection = null)
     {
         InitializeComponent();
         this.statistics = statistics;
         this.tasks = tasks;
+        this.selection = selection ?? new TaskSelection();
         RefreshTaskFilters();
-        TaskFilterPicker.SelectionChanged += (_, _) => RefreshData();
+        TaskFilterPicker.SelectionChanged += (_, _) =>
+        {
+            if (!refreshingFilters && TaskFilterPicker.SelectedItem is TaskFilter filter) this.selection.Select(filter.Id);
+            RefreshData();
+        };
+        this.selection.Changed += SelectionChanged;
+        SetSelectionLocked(this.selection.IsLocked);
         tasks.Changed += TasksChanged;
-        Closed += (_, _) => tasks.Changed -= TasksChanged;
+        Closed += (_, _) => { tasks.Changed -= TasksChanged; this.selection.Changed -= SelectionChanged; };
         Loaded += (_, _) => RefreshData();
+    }
+
+    public void SetSelectionLocked(bool locked) => TaskFilterPicker.IsEnabled = !locked;
+
+    private void SelectionChanged(object? sender, EventArgs e)
+    {
+        TaskFilterPicker.SelectedValue = selection.SelectedId;
+        RefreshData();
     }
 
     private IReadOnlyList<FocusSession> ReadSessions()
@@ -50,23 +67,24 @@ public partial class StatisticsWindow : Window
 
     private void RefreshTaskFilters()
     {
-        var selectedId = (TaskFilterPicker.SelectedItem as TaskFilter)?.Id;
+        var selectedId = selection.SelectedId ?? (TaskFilterPicker.SelectedItem as TaskFilter)?.Id;
         var filters = tasks.ActiveTasks()
             .Select(task => new TaskFilter(task.Id, task.Name, task.ColorHex)).ToList();
+        refreshingFilters = true;
         TaskFilterPicker.ItemsSource = filters;
         TaskFilterPicker.SelectedItem = filters.FirstOrDefault(filter => filter.Id == selectedId)
             ?? filters.FirstOrDefault();
+        refreshingFilters = false;
+        if (TaskFilterPicker.SelectedItem is TaskFilter filter) selection.Select(filter.Id);
     }
 
     public void RefreshData()
     {
         try
         {
-            var accent = new SolidColorBrush(SelectedTaskColor);
-            RoundsLabel.Foreground = accent;
-            FocusLabel.Foreground = accent;
-            CompletionLabel.Foreground = accent;
-            DrawTargetProgress(accent);
+            RoundsLabel.Foreground = Brushes.White;
+            FocusLabel.Foreground = Brushes.White;
+            DrawTargetProgress();
             DrawAnnualActivity();
             DrawDailyActivity();
         }
@@ -76,11 +94,11 @@ public partial class StatisticsWindow : Window
         }
     }
 
-    private void DrawTargetProgress(Brush accent)
+    private void DrawTargetProgress()
     {
         var selectedId = (TaskFilterPicker.SelectedItem as TaskFilter)?.Id;
         var task = tasks.ActiveTasks().FirstOrDefault(task => task.Id == selectedId);
-        TargetLabel.Foreground = accent;
+        TargetLabel.Foreground = Brushes.White;
         if (task?.TargetMinutes is not int target)
         {
             TargetLabel.Text = "—";
@@ -91,8 +109,17 @@ public partial class StatisticsWindow : Window
         var minutes = ReadSessions().Where(session => session.StartedAt.LocalDateTime.Date == selectedDay.Date)
             .Sum(session => session.FocusSeconds) / 60;
         var reached = minutes >= target;
-        TargetLabel.Text = $"{minutes / 60:0.##}/{target / 60.0:0.##}h";
+        TargetLabel.Text = $"{FormatGoalTime(minutes)} / {FormatGoalTime(target)}";
         TargetLabel.ToolTip = $"{(reached ? "Reached" : "In progress")} · {minutes / target * 100:0}% of the daily goal";
+    }
+
+    private static string FormatGoalTime(double totalMinutes)
+    {
+        var minutes = (int)Math.Floor(totalMinutes);
+        var hours = minutes / 60;
+        var remainder = minutes % 60;
+        if (hours == 0) return $"{remainder}m";
+        return remainder == 0 ? $"{hours}h" : $"{hours}h {remainder}m";
     }
 
     private void DrawAnnualActivity()
@@ -153,7 +180,6 @@ public partial class StatisticsWindow : Window
         DayLabel.Text = selectedDay.ToString("MMM dd, yyyy", CultureInfo.InvariantCulture);
         RoundsLabel.Text = completed.ToString(CultureInfo.InvariantCulture);
         FocusLabel.Text = minutes >= 60 ? $"{(int)(minutes / 60)}h {minutes % 60:0}m" : $"{minutes:0}m";
-        CompletionLabel.Text = sessions.Count == 0 ? "0%" : $"{100.0 * completed / sessions.Count:0}%";
         EmptyLabel.Text = sessions.Count == 0 ? "No sessions recorded for this day." : "";
         HourlyChart.Children.Clear();
         var counts = Enumerable.Range(0, 24)

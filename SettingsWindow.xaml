@@ -19,6 +19,7 @@
             </Grid>
             <TextBlock x:Name="ShortcutHint" Text="Click Change shortcut, then press your combination." FontSize="11" Foreground="#AAAAAA" TextWrapping="Wrap" Margin="0,6,0,16"/>
             <CheckBox x:Name="BorderOption" Content="Show focus border on all monitors" Foreground="#FFFFFF" Margin="0,0,0,12"/>
+            <CheckBox x:Name="PauseMediaOption" Content="Pause media when pausing the timer" Foreground="#FFFFFF" Margin="0,0,0,12" ToolTip="Pause playing apps and resume them with the timer, using Windows media controls"/>
             <CheckBox x:Name="StartupOption" Content="Start with Windows" Foreground="#FFFFFF" Margin="0,0,0,20"/>
             <TextBlock Text="Focus duration (10–60 minutes)" Margin="0,0,0,6"/>
             <ComboBox x:Name="DurationInput" Height="30" IsEditable="False" AutomationProperties.Name="Focus duration in minutes">

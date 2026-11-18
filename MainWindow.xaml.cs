@@ -9,6 +9,8 @@ namespace Seal;
 public partial class MainWindow : Window
 {
     private readonly FocusTimer focusTimer;
+    private readonly TaskSelection taskSelection = new();
+    private readonly MediaPauseService mediaPause = new();
     private AppSettings settings;
     private readonly SettingsRepository settingsRepository;
     private readonly WindowsStartupService windowsStartup = new();
@@ -20,6 +22,7 @@ public partial class MainWindow : Window
     private readonly StatisticsService statistics;
     private readonly DispatcherTimer refreshTimer = new() { Interval = TimeSpan.FromMilliseconds(200) };
     private StatisticsWindow? statisticsWindow;
+    private DateTime roundsDay;
     private DateTime nextCheckpoint = DateTime.UtcNow.AddSeconds(30);
 
     public MainWindow(FocusTimer focusTimer, StatisticsService statistics, TaskCatalog tasks, AppSettings? settings = null, SettingsRepository? settingsRepository = null)
@@ -35,6 +38,9 @@ public partial class MainWindow : Window
         timerShortcut = new GlobalTimerShortcut(this, () => ToggleTimer(this, new RoutedEventArgs()), this.settings);
         tasks.Changed += TasksChanged;
         RefreshTaskPicker();
+        TaskPicker.SelectionChanged += (_, _) => { if (TaskPicker.SelectedItem is FocusTask task) taskSelection.Select(task.Id); };
+        taskSelection.Changed += (_, _) => TaskPicker.SelectedValue = taskSelection.SelectedId;
+        if (TaskPicker.SelectedItem is FocusTask initialTask) taskSelection.Select(initialTask.Id);
         Refresh(null, EventArgs.Empty);
         refreshTimer.Tick += Refresh;
         refreshTimer.Start();
@@ -55,6 +61,7 @@ public partial class MainWindow : Window
     {
         try
         {
+            if (roundsDay != DateTime.Today) RefreshDailyRounds();
             if (focusTimer.Update())
             {
                 System.Media.SystemSounds.Asterisk.Play();
@@ -75,7 +82,10 @@ public partial class MainWindow : Window
         }
 
         focusBorder.UpdateVisibility(focusTimer.IsRunning && settings.ShowBorder);
-        TaskPicker.IsEnabled = !focusTimer.HasStarted || focusTimer.Remaining == TimeSpan.Zero;
+        taskSelection.IsLocked = focusTimer.HasStarted && focusTimer.Remaining > TimeSpan.Zero;
+        TaskPicker.IsEnabled = !taskSelection.IsLocked;
+        if (statisticsWindow is not null) statisticsWindow.SetSelectionLocked(taskSelection.IsLocked);
+        CompleteButton.IsEnabled = focusTimer.HasStarted && focusTimer.Remaining > TimeSpan.Zero;
         var seconds = (int)Math.Ceiling(focusTimer.Remaining.TotalSeconds);
         TimeDisplay.Text = $"{seconds / 60:00}:{seconds % 60:00}";
         FocusProgress.Value = focusTimer.Elapsed.TotalSeconds / focusTimer.Duration.TotalSeconds * 100;
@@ -88,8 +98,11 @@ public partial class MainWindow : Window
         StatusDisplay.Text = focusTimer.IsRunning ? "Focus time" : focusTimer.Remaining == TimeSpan.Zero ? "Session complete" : focusTimer.HasStarted ? "Paused" : "Ready to focus";
     }
 
-    private void ToggleTimer(object sender, RoutedEventArgs e)
+    private async void ToggleTimer(object sender, RoutedEventArgs e)
     {
+        var pauseMedia = focusTimer.IsRunning && settings.PauseMediaOnPause;
+        var resumeMedia = !focusTimer.IsRunning && focusTimer.HasStarted && focusTimer.Remaining > TimeSpan.Zero
+            && settings.PauseMediaOnPause;
         ExecuteSafely(() =>
         {
             if (focusTimer.IsRunning)
@@ -103,6 +116,16 @@ public partial class MainWindow : Window
 
             Refresh(null, EventArgs.Empty);
         });
+        if (pauseMedia && !await mediaPause.PausePlayingAsync())
+        {
+            MessageBox.Show(this, "Some media could not be paused. Check whether the player supports Windows media controls.",
+                "Seal", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        if (resumeMedia && !await mediaPause.ResumePausedAsync())
+        {
+            MessageBox.Show(this, "Some media could not be resumed. The player may have been closed or stopped.",
+                "Seal", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
     }
 
     private void ResetTimer(object sender, RoutedEventArgs e)
@@ -110,10 +133,20 @@ public partial class MainWindow : Window
         ExecuteSafely(() =>
         {
             focusTimer.Reset();
+            mediaPause.ForgetPausedSessions();
             RefreshTaskPicker();
             Refresh(null, EventArgs.Empty);
         });
     }
+
+    private void CompleteTimer(object sender, RoutedEventArgs e) => ExecuteSafely(() =>
+    {
+        focusTimer.Complete();
+        RefreshDailyRounds();
+        mediaPause.ForgetPausedSessions();
+        Refresh(null, EventArgs.Empty);
+        statisticsWindow?.RefreshData();
+    });
 
     private void ExecuteSafely(Action action)
     {
@@ -128,6 +161,13 @@ public partial class MainWindow : Window
         }
     }
 
+    private void OpenMainMenu(object sender, RoutedEventArgs e)
+    {
+        var menu = MenuButton.ContextMenu;
+        menu.PlacementTarget = MenuButton;
+        menu.IsOpen = !menu.IsOpen;
+    }
+
     private void OpenStatistics(object sender, RoutedEventArgs e) => ExecuteSafely(OpenStatisticsWindow);
 
     private void OpenStatisticsWindow()
@@ -136,7 +176,7 @@ public partial class MainWindow : Window
 
         if (statisticsWindow is null)
         {
-            statisticsWindow = new StatisticsWindow(statistics, tasks) { Owner = this };
+            statisticsWindow = new StatisticsWindow(statistics, tasks, taskSelection) { Owner = this };
             statisticsWindow.Closed += (_, _) => statisticsWindow = null;
             statisticsWindow.Show();
         }
@@ -160,10 +200,26 @@ public partial class MainWindow : Window
             available.Add(selected);
         }
 
+        RefreshDailyRounds();
         TaskPicker.ItemsSource = available;
         TaskPicker.SelectedItem = available.FirstOrDefault(task => task.Id == selected?.Id)
             ?? available.FirstOrDefault(task => task.Id == Guid.Empty)
             ?? available.First();
+        if (TaskPicker.SelectedItem is FocusTask current)
+        {
+            taskSelection.IsLocked = false;
+            taskSelection.Select(current.Id);
+        }
+    }
+
+    private void RefreshDailyRounds()
+    {
+        var day = DateTime.Today;
+        var completed = statistics.ForDay(day).Where(session => session.Completed)
+            .GroupBy(session => session.TaskId)
+            .ToDictionary(group => group.Key, group => group.Count());
+        TaskPicker.Tag = new DailyRounds(settings.FocusMinutes, completed);
+        roundsDay = day;
     }
 
     private void OpenTasks(object sender, RoutedEventArgs e) => ExecuteSafely(() =>
@@ -220,8 +276,10 @@ public partial class MainWindow : Window
             throw;
         }
 
+        if (!updated.PauseMediaOnPause) mediaPause.ForgetPausedSessions();
         settings = updated;
         focusTimer.ConfigureDuration(TimeSpan.FromMinutes(updated.FocusMinutes));
+        RefreshDailyRounds();
         Refresh(null, EventArgs.Empty);
     }
 

@@ -17,7 +17,7 @@ public sealed class FocusTimer(ISessionRepository repository, TimeSpan duration,
     public bool IsRunning => stopwatch.IsRunning;
     public TimeSpan Elapsed => restoredElapsed + stopwatch.Elapsed < Duration ? restoredElapsed + stopwatch.Elapsed : Duration;
     public FocusTask? CurrentTask => HasStarted ? sessionTask : null;
-    public TimeSpan Remaining => Duration - Elapsed;
+    public TimeSpan Remaining => completed ? TimeSpan.Zero : Duration - Elapsed;
     public bool HasStarted => sessionId != Guid.Empty;
 
     public void Restore()
@@ -90,6 +90,14 @@ public sealed class FocusTimer(ISessionRepository repository, TimeSpan duration,
         completed = true;
         Checkpoint();
         return true;
+    }
+
+    public void Complete()
+    {
+        if (!HasStarted || completed) return;
+        stopwatch.Stop();
+        completed = true;
+        Checkpoint();
     }
 
     public void Checkpoint()

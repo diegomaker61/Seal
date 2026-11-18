@@ -49,7 +49,7 @@
                         <Path Style="{StaticResource StatisticsIconStyle}" Data="{StaticResource MaterialRefresh}" />
                     </Button>
                 </StackPanel>
-                <UniformGrid Columns="4" Margin="0,0,0,16">
+                <UniformGrid Columns="3" Margin="0,0,0,16">
                     <StackPanel>
                         <TextBlock Text="ROUNDS" Foreground="#AAAAAA" />
                         <TextBlock x:Name="RoundsLabel" FontSize="32" FontWeight="SemiBold" />
@@ -57,10 +57,6 @@
                     <StackPanel>
                         <TextBlock Text="FOCUS TIME" Foreground="#AAAAAA" />
                         <TextBlock x:Name="FocusLabel" FontSize="32" FontWeight="SemiBold" />
-                    </StackPanel>
-                    <StackPanel>
-                        <TextBlock Text="COMPLETION" Foreground="#AAAAAA" />
-                        <TextBlock x:Name="CompletionLabel" FontSize="32" FontWeight="SemiBold" />
                     </StackPanel>
                     <StackPanel>
                         <TextBlock Text="Goal" Foreground="#AAAAAA" />

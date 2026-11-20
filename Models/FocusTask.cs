@@ -1,3 +1,3 @@
 namespace Seal.Models;
 
-public sealed record FocusTask(Guid Id, string Name, bool IsDeleted = false, string ColorHex = "", int? TargetMinutes = null);
+public sealed record FocusTask(Guid Id, string Name, bool IsDeleted = false, int? TargetMinutes = null);

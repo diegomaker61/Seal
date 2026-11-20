@@ -20,30 +20,6 @@ public sealed class TaskCatalog
             repository.SaveAll(updated);
             tasks = updated;
         }
-        var assigned = tasks.Where(task => !task.IsDeleted && TaskColorPalette.Contains(task.ColorHex))
-            .Select(task => task.ColorHex).ToList();
-        var updatedColors = tasks.ToList();
-
-        foreach (var task in tasks.OrderBy(task => task.IsDeleted))
-        {
-            if (TaskColorPalette.Contains(task.ColorHex))
-            {
-                continue;
-            }
-
-            var color = TaskColorPalette.Next(assigned);
-            updatedColors[updatedColors.FindIndex(item => item.Id == task.Id)] = task with { ColorHex = color };
-            if (!task.IsDeleted)
-            {
-                assigned.Add(color);
-            }
-        }
-
-        if (!tasks.SequenceEqual(updatedColors))
-        {
-            repository.SaveAll(updatedColors);
-            tasks = updatedColors;
-        }
     }
 
     public event EventHandler? Changed;
@@ -64,8 +40,7 @@ public sealed class TaskCatalog
         }
 
         ValidateTarget(targetMinutes);
-        var color = TaskColorPalette.Next(ActiveTasks().Select(task => task.ColorHex));
-        var task = new FocusTask(Guid.NewGuid(), ValidateName(name), ColorHex: color, TargetMinutes: targetMinutes);
+        var task = new FocusTask(Guid.NewGuid(), ValidateName(name), TargetMinutes: targetMinutes);
         Commit(tasks.Append(task).ToList());
         return task;
     }

@@ -6,6 +6,7 @@ namespace Seal.Services;
 public sealed class FocusTimer(ISessionRepository repository, TimeSpan duration, TimerStateRepository? stateRepository = null)
 {
     private readonly Stopwatch stopwatch = new();
+    private readonly Dictionary<Guid, TimerState> pausedRounds = [];
     private TimeSpan restoredElapsed;
     private Guid sessionId;
     private DateTimeOffset startedAt;
@@ -16,21 +17,27 @@ public sealed class FocusTimer(ISessionRepository repository, TimeSpan duration,
     public TimeSpan Duration { get; private set; } = duration;
     public bool IsRunning => stopwatch.IsRunning;
     public TimeSpan Elapsed => restoredElapsed + stopwatch.Elapsed < Duration ? restoredElapsed + stopwatch.Elapsed : Duration;
-    public FocusTask? CurrentTask => HasStarted ? sessionTask : null;
+    public FocusTask? CurrentTask => sessionTask;
     public TimeSpan Remaining => completed ? TimeSpan.Zero : Duration - Elapsed;
     public bool HasStarted => sessionId != Guid.Empty;
 
     public void Restore()
     {
-        var state = stateRepository?.Load();
-        if (state is null || state.SessionId == Guid.Empty || state.Task is null ||
-            !double.IsFinite(state.DurationSeconds) || !double.IsFinite(state.ElapsedSeconds) ||
-            state.DurationSeconds is < 600 or > 3600 || state.ElapsedSeconds < 0 ||
-            state.ElapsedSeconds >= state.DurationSeconds)
-        {
-            return;
-        }
+        var workspace = stateRepository?.LoadWorkspace();
+        if (workspace is null) return;
+        foreach (var round in workspace.Rounds.Where(IsValidState)) pausedRounds[round.Task.Id] = round;
+        sessionTask = workspace.SelectedTask ?? sessionTask;
+        if (!pausedRounds.TryGetValue(sessionTask.Id, out var state)) return;
+        ApplyState(state);
+    }
 
+    private static bool IsValidState(TimerState state) => state.SessionId != Guid.Empty && state.Task is not null
+        && double.IsFinite(state.DurationSeconds) && double.IsFinite(state.ElapsedSeconds)
+        && state.DurationSeconds is >= 600 and <= 3600 && state.ElapsedSeconds >= 0
+        && state.ElapsedSeconds < state.DurationSeconds;
+
+    private void ApplyState(TimerState state)
+    {
         stopwatch.Reset();
         sessionId = state.SessionId;
         startedAt = state.StartedAt;
@@ -38,6 +45,20 @@ public sealed class FocusTimer(ISessionRepository repository, TimeSpan duration,
         restoredElapsed = TimeSpan.FromSeconds(state.ElapsedSeconds);
         sessionTask = state.Task;
         completed = false;
+    }
+
+    public void SwitchTask(FocusTask task)
+    {
+        if (sessionTask.Id == task.Id) return;
+        Pause();
+        stopwatch.Reset();
+        restoredElapsed = TimeSpan.Zero;
+        sessionId = Guid.Empty;
+        completed = false;
+        sessionTask = task;
+        Duration = configuredDuration;
+        if (pausedRounds.TryGetValue(task.Id, out var state)) ApplyState(state with { Task = task });
+        SaveState();
     }
 
     public void Start(FocusTask? task = null)
@@ -121,6 +142,7 @@ public sealed class FocusTimer(ISessionRepository repository, TimeSpan duration,
     public void Reset()
     {
         Pause();
+        pausedRounds.Remove(sessionTask.Id);
         stopwatch.Reset();
         restoredElapsed = TimeSpan.Zero;
         sessionId = Guid.Empty;
@@ -129,8 +151,12 @@ public sealed class FocusTimer(ISessionRepository repository, TimeSpan duration,
         SaveState();
     }
 
-    private void SaveState() => stateRepository?.Save(HasStarted && !completed && Remaining > TimeSpan.Zero
-        ? new TimerState(sessionId, startedAt, Duration.TotalSeconds, Elapsed.TotalSeconds, sessionTask)
-        : null);
+    private void SaveState()
+    {
+        if (HasStarted && !completed && Remaining > TimeSpan.Zero)
+            pausedRounds[sessionTask.Id] = new TimerState(sessionId, startedAt, Duration.TotalSeconds, Elapsed.TotalSeconds, sessionTask);
+        else
+            pausedRounds.Remove(sessionTask.Id);
+        stateRepository?.SaveWorkspace(new TimerWorkspace(sessionTask, pausedRounds.Values.ToList()));
+    }
 }
-

@@ -90,18 +90,22 @@ Released under the **GNU GPL v3.0**. See [LICENSE](LICENSE).
 
 [Google Material Icons](https://github.com/google/material-design-icons) use the Apache 2.0 license, included in [Assets/MaterialIcons/LICENSE.txt](Assets/MaterialIcons/LICENSE.txt).
 
-## Task colors
 
-Tasks automatically receive a color from a predefined palette of 20 vivid colors. Colors are saved in tasks.json and preserved when renaming. Pickers and the task list show a color marker; the calendar, bars, and metrics use the selected task color. Statistics always show one task at a time, without All tasks. Up to 20 active tasks are allowed, including default. Removing a task frees its slot and color. Existing tasks receive a color automatically without changing their sessions.
 
 
 Closing Seal saves the remaining focus time and task. Reopening restores the unfinished session paused; time spent with the app closed is excluded. Resetting or completing a session clears its saved timer state.
 
 
-Select a daily goal from **0h to 10h**; **0h** is the default and means no goal. Click **New** to select a new draft with a blank name and an assigned color. Enter its name and click **Save** to create it. Select an existing task to edit its name or goal, then click **Save**. Statistics show progress for the selected day, including partial sessions.
+Select a daily goal from **0h to 10h**; **0h** is the default and means no goal. Click **New** to select a new draft with a blank name. Enter its name and click **Save** to create it. Select an existing task to edit its name or goal, then click **Save**. Statistics show progress for the selected day, including partial sessions.
 
 Enable **Pause media when pausing the timer** in Settings to pause all playing sessions exposed by Windows media controls, using either the pause button or global shortcut. Disabled by default. Players without Windows media integration cannot be controlled. Resuming the timer resumes only media successfully paused by Seal during the current app run. Resetting the timer or disabling the option clears this list.
 
-Main and Statistics share the selected task. Both selectors stay locked during an unfinished session. Hold Reset or Complete for 2 seconds; releasing early cancels. Complete marks the session completed while recording only actual focus time.
+Main and Statistics share the selected task. Hold Reset or Complete for 2 seconds; releasing early cancels. Complete marks the session completed while recording only actual focus time.
 
 For tasks with a daily Goal, the main task picker displays completed rounds today versus required rounds, e.g. **Study · 2/4 rounds**. Required rounds use the configured focus duration, rounded up; tasks without a Goal show only their name.
+
+While the timer runs and the pointer is outside the main window, menu, close and timer action buttons hide, and the progress bar becomes thicker and brighter. Moving the pointer back or pausing restores the controls.
+
+Switching tasks pauses and preserves each unfinished round separately. Returning restores its remaining time, paused, with the same session ID. Saved rounds also survive closing the app. Reset and Complete affect only the selected task round; focus history remains assigned to its original task.
+
+Tasks use plain names without individual colors. Statistics use the Seal accent color. Up to 20 active tasks are supported. Existing tasks, goals and history remain compatible.

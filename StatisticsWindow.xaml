@@ -19,7 +19,7 @@
                 <Button DockPanel.Dock="Right" Click="CloseWindow" ToolTip="Close" Width="32" Height="28" Padding="0" VerticalAlignment="Center" AutomationProperties.Name="Close">
                     <Path Style="{StaticResource StatisticsIconStyle}" Data="{StaticResource MaterialClose}" />
                 </Button>
-                <ComboBox x:Name="TaskFilterPicker" DockPanel.Dock="Right" Width="170" Height="28" Margin="0,0,48,0" VerticalAlignment="Center" ItemTemplate="{StaticResource TaskNameTemplate}" SelectedValuePath="Id" ToolTip="Filter statistics by task" AutomationProperties.Name="Statistics task filter" />
+                <ComboBox x:Name="TaskFilterPicker" FontSize="14" DockPanel.Dock="Right" Width="170" Height="28" Margin="0,0,48,0" VerticalAlignment="Center" ItemTemplate="{StaticResource TaskNameTemplate}" SelectedValuePath="Id" ToolTip="Filter statistics by task" AutomationProperties.Name="Statistics task filter"  Style="{StaticResource ClickableTaskPickerStyle}"/>
                 <TextBlock Text="Statistics" FontSize="24" FontWeight="SemiBold" ToolTip="Drag to move" />
             </DockPanel>
             <StackPanel Grid.Row="1" Width="748" HorizontalAlignment="Center" VerticalAlignment="Top">

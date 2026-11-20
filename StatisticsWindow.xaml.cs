@@ -55,9 +55,7 @@ public partial class StatisticsWindow : Window
         return statistics.ReadAll().Where(session => session.TaskId == selected.Id).ToList();
     }
 
-    private Color SelectedTaskColor => TaskFilterPicker.SelectedItem is TaskFilter selected
-        ? (Color)ColorConverter.ConvertFromString(selected.ColorHex)
-        : Color.FromRgb(48, 48, 48);
+    private Color StatisticsColor => ((SolidColorBrush)FindResource("AccentBrush")).Color;
 
     private void TasksChanged(object? sender, EventArgs e)
     {
@@ -69,7 +67,7 @@ public partial class StatisticsWindow : Window
     {
         var selectedId = selection.SelectedId ?? (TaskFilterPicker.SelectedItem as TaskFilter)?.Id;
         var filters = tasks.ActiveTasks()
-            .Select(task => new TaskFilter(task.Id, task.Name, task.ColorHex)).ToList();
+            .Select(task => new TaskFilter(task.Id, task.Name)).ToList();
         refreshingFilters = true;
         TaskFilterPicker.ItemsSource = filters;
         TaskFilterPicker.SelectedItem = filters.FirstOrDefault(filter => filter.Id == selectedId)
@@ -131,7 +129,7 @@ public partial class StatisticsWindow : Window
             .ToDictionary(group => group.Key, group => group.Sum(session => session.FocusSeconds));
         var firstDay = new DateTime(selectedYear, 1, 1);
         var start = firstDay.AddDays(-(int)firstDay.DayOfWeek);
-        var accent = SelectedTaskColor;
+        var accent = StatisticsColor;
         var colors = Enumerable.Range(0, 5).Select(level => new SolidColorBrush(Color.FromRgb(
             (byte)(48 + (accent.R - 48) * level / 4.0),
             (byte)(48 + (accent.G - 48) * level / 4.0),
@@ -196,7 +194,7 @@ public partial class StatisticsWindow : Window
                 Height = height,
                 RadiusX = 2,
                 RadiusY = 2,
-                Fill = counts[hour] == 0 ? new SolidColorBrush(Color.FromRgb(56, 56, 56)) : new SolidColorBrush(SelectedTaskColor),
+                Fill = counts[hour] == 0 ? new SolidColorBrush(Color.FromRgb(56, 56, 56)) : new SolidColorBrush(StatisticsColor),
                 ToolTip = $"{hour:00}:00 — {counts[hour]} completed sessions"
             };
             Canvas.SetLeft(bar, hour * 31);

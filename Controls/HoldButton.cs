@@ -1,8 +1,7 @@
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Threading;
+using System.Windows.Media.Animation;
 
 namespace Seal.Controls;
 
@@ -11,20 +10,12 @@ public sealed class HoldButton : Button
     public static readonly DependencyProperty HoldProgressProperty = DependencyProperty.Register(
         nameof(HoldProgress), typeof(double), typeof(HoldButton), new PropertyMetadata(0.0));
     public double HoldProgress { get => (double)GetValue(HoldProgressProperty); private set => SetValue(HoldProgressProperty, value); }
-    private readonly Stopwatch watch = new();
-    private readonly DispatcherTimer timer = new() { Interval = TimeSpan.FromMilliseconds(25) };
+    private bool isHolding;
+    private int holdVersion;
     private bool confirmed;
 
     public HoldButton()
     {
-        timer.Tick += (_, _) =>
-        {
-            HoldProgress = Math.Min(100, watch.Elapsed.TotalSeconds / 2 * 100);
-            if (HoldProgress < 100) return;
-            CancelHold();
-            confirmed = true;
-            try { OnClick(); } finally { confirmed = false; }
-        };
         LostMouseCapture += (_, _) => CancelHold();
         LostKeyboardFocus += (_, _) => CancelHold();
         MouseLeave += (_, _) => CancelHold();
@@ -59,6 +50,27 @@ public sealed class HoldButton : Button
         if (e.Key is Key.Space or Key.Enter) { CancelHold(); e.Handled = true; }
         base.OnPreviewKeyUp(e);
     }
-    private void BeginHold() { watch.Restart(); timer.Start(); }
-    private void CancelHold() { timer.Stop(); watch.Reset(); HoldProgress = 0; }
+    private void BeginHold()
+    {
+        if (isHolding || !IsEnabled) return;
+        isHolding = true;
+        var version = ++holdVersion;
+        var animation = new DoubleAnimation(0, 100, TimeSpan.FromSeconds(2));
+        animation.Completed += (_, _) =>
+        {
+            if (!isHolding || version != holdVersion || !IsEnabled) return;
+            isHolding = false;
+            confirmed = true;
+            try { OnClick(); } finally { confirmed = false; }
+        };
+        BeginAnimation(HoldProgressProperty, animation, HandoffBehavior.SnapshotAndReplace);
+    }
+
+    private void CancelHold()
+    {
+        isHolding = false;
+        holdVersion++;
+        BeginAnimation(HoldProgressProperty, null);
+        HoldProgress = 0;
+    }
 }

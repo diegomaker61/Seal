@@ -69,8 +69,7 @@ public partial class TasksWindow : Window
         if (newTask is null)
         {
             if (tasks.ActiveTasks().Count >= TaskCatalog.MaximumActiveTasks) return;
-            newTask = new FocusTask(Guid.NewGuid(), "", ColorHex:
-                TaskColorPalette.Next(tasks.ActiveTasks().Select(task => task.ColorHex)));
+            newTask = new FocusTask(Guid.NewGuid(), "");
         }
 
         RefreshTasks(newTask.Id);

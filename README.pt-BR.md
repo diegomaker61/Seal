@@ -90,18 +90,22 @@ Distribuído sob a **GNU GPL v3.0**. Consulte [LICENSE](LICENSE).
 
 Os [Material Icons do Google](https://github.com/google/material-design-icons) utilizam a licença Apache 2.0, disponível em [Assets/MaterialIcons/LICENSE.txt](Assets/MaterialIcons/LICENSE.txt).
 
-## Cores das tarefas
 
-Cada tarefa recebe automaticamente uma cor de uma paleta de 20 cores vivas. A cor é salva em tasks.json e permanece ao renomear. Os seletores e a lista mostram um marcador colorido; calendário, barras e indicadores usam a cor da tarefa selecionada. As estatísticas sempre exibem uma tarefa por vez, sem All tasks. São permitidas até 20 tarefas ativas, incluindo default. Remover uma tarefa libera sua vaga e cor. Tarefas existentes recebem uma cor automaticamente, sem alterar suas sessões.
 
 
 Ao fechar o Seal, o tempo restante e a tarefa da sessão são salvos. Ao abrir novamente, a sessão incompleta retorna pausada; o período com o aplicativo fechado não é contado. Reiniciar ou concluir a sessão limpa o estado salvo do cronômetro.
 
 
-Selecione uma meta diária de **0h a 10h**; **0h** é o padrão e significa sem meta. Clique em **New** para selecionar uma tarefa provisória com nome em branco e uma cor atribuída. Informe o nome e clique em **Save** para criá-la. Selecione uma tarefa existente para editar nome ou meta e clique em **Save**. As estatísticas mostram o progresso do dia selecionado, incluindo sessões parciais.
+Selecione uma meta diária de **0h a 10h**; **0h** é o padrão e significa sem meta. Clique em **New** para selecionar uma tarefa provisória com nome em branco. Informe o nome e clique em **Save** para criá-la. Selecione uma tarefa existente para editar nome ou meta e clique em **Save**. As estatísticas mostram o progresso do dia selecionado, incluindo sessões parciais.
 
 Ative **Pause media when pausing the timer** em Settings para pausar todas as sessões em reprodução disponíveis nos controles de mídia do Windows, pelo botão de pausa ou atalho global. Desativado por padrão. Players sem integração com os controles de mídia do Windows não podem ser controlados. Ao continuar o cronômetro, somente as mídias pausadas com sucesso pelo Seal nesta execução são retomadas. Reiniciar o cronômetro ou desativar a opção limpa essa lista.
 
-Main e Statistics compartilham a tarefa selecionada. Os dois seletores ficam bloqueados durante uma sessão incompleta. Segure Reset ou Complete por 2 segundos; soltar antes cancela. Complete marca a sessão como concluída e registra somente o tempo realmente focado.
+Main e Statistics compartilham a tarefa selecionada. Segure Reset ou Complete por 2 segundos; soltar antes cancela. Complete marca a sessão como concluída e registra somente o tempo realmente focado.
 
 Para tarefas com Goal diário, o seletor principal mostra as rodadas concluídas hoje e as necessárias, como **Study · 2/4 rounds**. O total usa a duração de foco configurada, arredondado para cima; tarefas sem Goal mostram somente o nome.
+
+Com o cronômetro rodando e o mouse fora da janela principal, os botões de menu, fechar e ações ficam ocultos, e a barra de progresso fica mais espessa e brilhante. Ao voltar com o mouse ou pausar, os controles reaparecem.
+
+Trocar de tarefa pausa e preserva cada round incompleto separadamente. Ao voltar, o tempo restante é restaurado, pausado, mantendo o mesmo ID da sessão. Os rounds salvos também são mantidos ao fechar o aplicativo. Reset e Complete afetam somente o round da tarefa selecionada; o histórico continua vinculado à tarefa original.
+
+As tarefas usam apenas nomes, sem cores individuais. As estatísticas usam a cor de destaque do Seal. São permitidas até 20 tarefas ativas. Tarefas, metas e histórico existentes continuam compatíveis.

@@ -1,6 +1,8 @@
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 using Seal.Services;
 using Seal.Models;
 
@@ -22,14 +24,16 @@ public partial class MainWindow : Window
     private readonly StatisticsService statistics;
     private readonly DispatcherTimer refreshTimer = new() { Interval = TimeSpan.FromMilliseconds(200) };
     private StatisticsWindow? statisticsWindow;
+    private bool? cleanFocusMode;
+    private bool refreshingTaskPicker;
+    private bool switchingTask;
     private DateTime roundsDay;
     private DateTime nextCheckpoint = DateTime.UtcNow.AddSeconds(30);
 
     public MainWindow(FocusTimer focusTimer, StatisticsService statistics, TaskCatalog tasks, AppSettings? settings = null, SettingsRepository? settingsRepository = null)
     {
         InitializeComponent();
-        AppNameLabel.Text = AppDataPaths.IsDevelopment ? "Seal (Dev)" : "Seal";
-        Title = AppNameLabel.Text;
+        Title = AppDataPaths.IsDevelopment ? "Seal (Dev)" : "Seal";
         this.focusTimer = focusTimer;
         this.statistics = statistics;
         this.tasks = tasks;
@@ -38,8 +42,8 @@ public partial class MainWindow : Window
         timerShortcut = new GlobalTimerShortcut(this, () => ToggleTimer(this, new RoutedEventArgs()), this.settings);
         tasks.Changed += TasksChanged;
         RefreshTaskPicker();
-        TaskPicker.SelectionChanged += (_, _) => { if (TaskPicker.SelectedItem is FocusTask task) taskSelection.Select(task.Id); };
-        taskSelection.Changed += (_, _) => TaskPicker.SelectedValue = taskSelection.SelectedId;
+        TaskPicker.SelectionChanged += (_, _) => { if (!refreshingTaskPicker && TaskPicker.SelectedItem is FocusTask task) taskSelection.Select(task.Id); RefreshRoundMarkers(); };
+        taskSelection.Changed += SelectedTaskChanged;
         if (TaskPicker.SelectedItem is FocusTask initialTask) taskSelection.Select(initialTask.Id);
         Refresh(null, EventArgs.Empty);
         refreshTimer.Tick += Refresh;
@@ -77,15 +81,17 @@ public partial class MainWindow : Window
         catch (Exception error) when (error is System.IO.IOException or UnauthorizedAccessException or System.Text.Json.JsonException)
         {
             focusBorder.UpdateVisibility(focusTimer.IsRunning && settings.ShowBorder);
-            StatusDisplay.Text = "Unable to save history";
+            TimeDisplay.ToolTip = "Unable to save history";
             return;
         }
 
+        TimeDisplay.ToolTip = null;
         focusBorder.UpdateVisibility(focusTimer.IsRunning && settings.ShowBorder);
-        taskSelection.IsLocked = focusTimer.HasStarted && focusTimer.Remaining > TimeSpan.Zero;
+        taskSelection.IsLocked = false;
         TaskPicker.IsEnabled = !taskSelection.IsLocked;
         if (statisticsWindow is not null) statisticsWindow.SetSelectionLocked(taskSelection.IsLocked);
         CompleteButton.IsEnabled = focusTimer.HasStarted && focusTimer.Remaining > TimeSpan.Zero;
+        RefreshFocusAppearance();
         var seconds = (int)Math.Ceiling(focusTimer.Remaining.TotalSeconds);
         TimeDisplay.Text = $"{seconds / 60:00}:{seconds % 60:00}";
         FocusProgress.Value = focusTimer.Elapsed.TotalSeconds / focusTimer.Duration.TotalSeconds * 100;
@@ -95,7 +101,41 @@ public partial class MainWindow : Window
             ? $"{action} ({settings.ShortcutLabel})"
             : $"{action} — shortcut unavailable ({settings.ShortcutLabel} is in use)";
         System.Windows.Automation.AutomationProperties.SetName(ToggleButton, action);
-        StatusDisplay.Text = focusTimer.IsRunning ? "Focus time" : focusTimer.Remaining == TimeSpan.Zero ? "Session complete" : focusTimer.HasStarted ? "Paused" : "Ready to focus";
+    }
+
+    private void FocusPointerChanged(object sender, MouseEventArgs e) => RefreshFocusAppearance();
+
+    private void RefreshFocusAppearance()
+    {
+        if (focusTimer is null) return;
+        var clean = focusTimer.IsRunning && !IsMouseOver && MenuButton.ContextMenu?.IsOpen != true;
+        FocusProgress.IsShimmerActive = focusTimer.IsRunning;
+        if (cleanFocusMode == clean) return;
+        cleanFocusMode = clean;
+        var duration = TimeSpan.FromMilliseconds(300);
+        var easing = new CubicEase { EasingMode = EasingMode.EaseInOut };
+        foreach (var control in new FrameworkElement[] { TimerActions, TaskSelectionArea })
+        {
+            control.Visibility = Visibility.Visible;
+            control.IsHitTestVisible = !clean;
+            var fade = new DoubleAnimation(control.Opacity, clean ? 0 : 1, duration) { EasingFunction = easing };
+            if (clean)
+            {
+                fade.Completed += (_, _) =>
+                {
+                    if (cleanFocusMode == true) control.Visibility = Visibility.Hidden;
+                };
+            }
+
+            control.BeginAnimation(OpacityProperty, fade, HandoffBehavior.SnapshotAndReplace);
+        }
+
+        CleanTimerGroup.BeginAnimation(OpacityProperty,
+            new DoubleAnimation(CleanTimerGroup.Opacity, clean ? 1 : 0, duration) { EasingFunction = easing },
+            HandoffBehavior.SnapshotAndReplace);
+
+
+
     }
 
     private async void ToggleTimer(object sender, RoutedEventArgs e)
@@ -185,13 +225,40 @@ public partial class MainWindow : Window
         statisticsWindow.Activate();
     }
 
+    private async void SelectedTaskChanged(object? sender, EventArgs e)
+    {
+        TaskPicker.SelectedValue = taskSelection.SelectedId;
+        if (switchingTask) return;
+        var previousTask = focusTimer.CurrentTask;
+        var pauseMedia = focusTimer.IsRunning && settings.PauseMediaOnPause;
+        if (previousTask?.Id != taskSelection.SelectedId && TaskPicker.SelectedItem is FocusTask nextTask)
+        {
+            var saved = false;
+            switchingTask = true;
+            ExecuteSafely(() =>
+            {
+                focusTimer.SwitchTask(nextTask);
+                mediaPause.ForgetPausedSessions();
+                saved = true;
+            });
+            if (!saved && previousTask is not null) taskSelection.Select(previousTask.Id);
+            switchingTask = false;
+            if (!saved) return;
+            RefreshDailyRounds();
+            Refresh(null, EventArgs.Empty);
+            statisticsWindow?.RefreshData();
+            if (pauseMedia) await mediaPause.PausePlayingAsync();
+        }
+        RefreshRoundMarkers();
+    }
+
     private void TasksChanged(object? sender, EventArgs e) => RefreshTaskPicker();
 
     private void RefreshTaskPicker()
     {
         var selected = focusTimer.HasStarted && focusTimer.Remaining > TimeSpan.Zero
             ? focusTimer.CurrentTask
-            : TaskPicker.SelectedItem as FocusTask;
+            : TaskPicker.SelectedItem as FocusTask ?? focusTimer.CurrentTask;
         var available = tasks.ActiveTasks().ToList();
 
         if (selected is not null && focusTimer.HasStarted && focusTimer.Remaining > TimeSpan.Zero &&
@@ -201,15 +268,18 @@ public partial class MainWindow : Window
         }
 
         RefreshDailyRounds();
+        refreshingTaskPicker = true;
         TaskPicker.ItemsSource = available;
         TaskPicker.SelectedItem = available.FirstOrDefault(task => task.Id == selected?.Id)
             ?? available.FirstOrDefault(task => task.Id == Guid.Empty)
             ?? available.First();
+        refreshingTaskPicker = false;
         if (TaskPicker.SelectedItem is FocusTask current)
         {
             taskSelection.IsLocked = false;
             taskSelection.Select(current.Id);
         }
+        RefreshRoundMarkers();
     }
 
     private void RefreshDailyRounds()
@@ -220,6 +290,24 @@ public partial class MainWindow : Window
             .ToDictionary(group => group.Key, group => group.Count());
         TaskPicker.Tag = new DailyRounds(settings.FocusMinutes, completed);
         roundsDay = day;
+        RefreshRoundMarkers();
+    }
+
+    private void RefreshRoundMarkers()
+    {
+        if (TaskPicker.SelectedItem is not FocusTask task || task.TargetMinutes is not > 0 ||
+            TaskPicker.Tag is not DailyRounds rounds)
+        {
+            CleanRoundMarkers.ItemsSource = null;
+            CleanRoundMarkers.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        var required = (int)Math.Ceiling(task.TargetMinutes.Value / (double)rounds.FocusMinutes);
+        rounds.Completed.TryGetValue(task.Id, out var completed);
+        CleanRoundMarkers.ItemsSource = Enumerable.Range(0, required).Select(index => index < completed).ToList();
+        CleanRoundMarkers.Visibility = Visibility.Visible;
+        System.Windows.Automation.AutomationProperties.SetName(CleanRoundMarkers, $"{completed}/{required} rounds");
     }
 
     private void OpenTasks(object sender, RoutedEventArgs e) => ExecuteSafely(() =>
